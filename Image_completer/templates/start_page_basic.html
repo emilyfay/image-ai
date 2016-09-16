@@ -1,0 +1,329 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="Page for image completion tool">
+    <meta name="author" content="Emily Fay">
+    <link rel="icon" href="../static/images/favicon.ico">
+
+    <title>Image Completion Tool</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="../static/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <link href="../../assets/css/ie10-viewport-bug-workaround.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="cover.css" rel="stylesheet">
+
+    <style>
+
+		html
+		{
+		}
+			body
+			{
+				font-family: Roboto, sans-serif;
+				color: #0f3c4b;
+				background-color: #e5edf1;
+				padding: 5rem 1.25rem; /* 80 20 */
+			}
+
+			.container
+			{
+				width: 100%;
+				max-width: 680px; /* 800 */
+				text-align: center;
+				margin: 0 auto;
+			}
+
+				.container h1
+				{
+					font-size: 42px;
+					font-weight: 300;
+					color: #0f3c4b;
+					margin-bottom: 40px;
+				}
+				.container h1 a:hover,
+				.container h1 a:focus
+				{
+					color: #39bfd3;
+				}
+
+				.container nav
+				{
+					margin-bottom: 40px;
+				}
+					.container nav a
+					{
+						border-bottom: 2px solid #c8dadf;
+						display: inline-block;
+						padding: 4px 8px;
+						margin: 0 5px;
+					}
+					.container nav a.is-selected
+					{
+						font-weight: 700;
+						color: #39bfd3;
+						border-bottom-color: currentColor;
+					}
+					.container nav a:not( .is-selected ):hover,
+					.container nav a:not( .is-selected ):focus
+					{
+						border-bottom-color: #0f3c4b;
+					}
+
+				.container footer
+				{
+					color: #92b0b3;
+					margin-top: 40px;
+				}
+					.container footer p + p
+					{
+						margin-top: 1em;
+					}
+					.container footer a:hover,
+					.container footer a:focus
+					{
+						color: #39bfd3;
+					}
+
+				.box
+				{
+					font-size: 1.25rem; /* 20 */
+					background-color: #c8dadf;
+					position: relative;
+					padding: 100px 20px;
+				}
+				.box.has-advanced-upload
+				{
+					outline: 2px dashed #92b0b3;
+					outline-offset: -10px;
+
+					-webkit-transition: outline-offset .15s ease-in-out, background-color .15s linear;
+					transition: outline-offset .15s ease-in-out, background-color .15s linear;
+				}
+				.box.is-dragover
+				{
+					outline-offset: -20px;
+					outline-color: #c8dadf;
+					background-color: #fff;
+				}
+					.box__dragndrop,
+					.box__icon
+					{
+						display: none;
+					}
+					.box.has-advanced-upload .box__dragndrop
+					{
+						display: inline;
+					}
+					.box.has-advanced-upload .box__icon
+					{
+						width: 100%;
+						height: 80px;
+						fill: #92b0b3;
+						display: block;
+						margin-bottom: 40px;
+					}
+
+					.box.is-uploading .box__input,
+					.box.is-success .box__input,
+					.box.is-error .box__input
+					{
+						visibility: hidden;
+					}
+
+					.box__uploading,
+					.box__success,
+					.box__error
+					{
+						display: none;
+					}
+					.box.is-uploading .box__uploading,
+					.box.is-success .box__success,
+					.box.is-error .box__error
+					{
+						display: block;
+						position: absolute;
+						top: 50%;
+						right: 0;
+						left: 0;
+
+						-webkit-transform: translateY( -50% );
+						transform: translateY( -50% );
+					}
+					.box__uploading
+					{
+						font-style: italic;
+					}
+					.box__success
+					{
+						-webkit-animation: appear-from-inside .25s ease-in-out;
+						animation: appear-from-inside .25s ease-in-out;
+					}
+						@-webkit-keyframes appear-from-inside
+						{
+							from	{ -webkit-transform: translateY( -50% ) scale( 0 ); }
+							75%		{ -webkit-transform: translateY( -50% ) scale( 1.1 ); }
+							to		{ -webkit-transform: translateY( -50% ) scale( 1 ); }
+						}
+						@keyframes appear-from-inside
+						{
+							from	{ transform: translateY( -50% ) scale( 0 ); }
+							75%		{ transform: translateY( -50% ) scale( 1.1 ); }
+							to		{ transform: translateY( -50% ) scale( 1 ); }
+						}
+
+					.box__restart
+					{
+						font-weight: 700;
+					}
+					.box__restart:focus,
+					.box__restart:hover
+					{
+						color: #39bfd3;
+					}
+
+					.js .box__file
+					{
+						width: 0.1px;
+						height: 0.1px;
+						opacity: 0;
+						overflow: hidden;
+						position: absolute;
+						z-index: -1;
+					}
+					.js .box__file + label
+					{
+						max-width: 80%;
+						text-overflow: ellipsis;
+						white-space: nowrap;
+						cursor: pointer;
+						display: inline-block;
+						overflow: hidden;
+					}
+					.js .box__file + label:hover strong,
+					.box__file:focus + label strong,
+					.box__file.has-focus + label strong
+					{
+						color: #39bfd3;
+					}
+					.js .box__file:focus + label,
+					.js .box__file.has-focus + label
+					{
+						outline: 1px dotted #000;
+						outline: -webkit-focus-ring-color auto 5px;
+					}
+						.js .box__file + label *
+						{
+							/* pointer-events: none; */ /* in case of FastClick lib use */
+						}
+
+					.no-js .box__file + label
+					{
+						display: none;
+					}
+
+					.no-js .box__button
+					{
+						display: block;
+					}
+					.box__button
+					{
+						font-weight: 700;
+						color: #e5edf1;
+						background-color: #39bfd3;
+						display: none;
+						padding: 8px 16px;
+						margin: 40px auto 0;
+					}
+						.box__button:hover,
+						.box__button:focus
+						{
+							background-color: #0f3c4b;
+						}
+
+	</style>
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <script>(function(e,t,n){var r=e.querySelectorAll("html")[0];r.className=r.className.replace(/(^|\s)no-js(\s|$)/,"$1js$2")})(document,window,0);</script>
+
+  </head>
+
+  <body background="../static/images/grey.png">
+
+    <div class="site-wrapper">
+
+      <div class="site-wrapper-inner">
+
+        <div class="cover-container">
+
+          <div class="masthead clearfix">
+            <div class="inner">
+              <h3 class="masthead-brand">Photo completion</h3>
+              <nav>
+                <ul class="nav masthead-nav">
+                  <li class="active"><a href="#">Link 1</a> </li>
+
+                </ul>
+              </nav>
+            </div>
+          </div>
+
+          <STYLE type="text/css">
+            h1 {text-align: center}
+            h3 {text-align: left}
+            p {text-align: center}
+            form {text-align: center}
+          </STYLE>
+          <div class="inner cover">
+            <h1 class="cover-heading">Image Completion with Deep Learning</h1>
+            <p class="lead">To get started, upload an image you want to extend. </p>
+
+            <form class="box" method="post" action="" enctype="multipart/form-data">
+                  <div class="box__input">
+                    <input class="box__file" type="file" name="files[]" id="file" data-multiple-caption="{count} files selected" multiple />
+                    <label for="file"><strong>Choose a file</strong><span class="box__dragndrop"> or drag it here</span>.</label>
+                    <button class="btn btn-lg btn-default" type="submit">Upload</button>
+                  </div>
+                  <div class="box__uploading">Uploading&hellip;</div>
+                  <div class="box__success">Done!</div>
+                  <div class="box__error">Error! <span></span>.</div>
+
+            </form>
+
+
+          </div>
+
+          <div class="mastfoot">
+            <div class="inner">
+              <p>Cover template for <a href="http://getbootstrap.com">Bootstrap</a>, by <a href="https://twitter.com/mdo">@mdo</a>.</p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery.min.js"><\/script>')</script>
+    <script src="../../dist/js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../../assets/js/ie10-viewport-bug-workaround.js"></script>
+  </body>
+</html>
