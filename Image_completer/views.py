@@ -24,11 +24,11 @@ def allowed_file(filename):
 @app.route('/')
 @app.route('/home')
 def home():
-	return render_template("start_page.html")
+	return render_template("image.html")
 
 @app.route('/image')
 def display_image():
-    return render_template("image.html")
+    return render_template("index.html")
 
 
 # dropzone activates this
