@@ -5,7 +5,7 @@ import os.path
 import shutil
 import subprocess
 
-landing_upload_folder = "Image_completer/upload_landing"
+landing_upload_folder = "Image_completer/static/upload_landing"
 raw_upload_folder = "Image_completer/raw_uploads"
 proc_upload_folder = "Image_completer/proc_uploads"
 
@@ -24,11 +24,11 @@ def allowed_file(filename):
 @app.route('/')
 @app.route('/home')
 def home():
-	return render_template("image.html")
+	return render_template("drop_image.html")
 
 @app.route('/image')
 def display_image():
-    return render_template("index.html")
+    return render_template("display_image.html")
 
 
 # dropzone activates this
@@ -39,13 +39,14 @@ def upload_file():
         if file and allowed_file(file.filename):
             filename = werkzeug.secure_filename(file.filename)
             file.save(os.path.join(landing_upload_folder, filename))
-            return redirect(url_for('uploaded_file',
-                                    filename=filename))
+            return redirect(url_for('file_upload', filename = filename))
+    return
 
-@app.route('/uploaded_file')
-def uploaded_file():
+@app.route('/file_upload')
+def file_upload():
     filename = request.args.get("filename")
     base, ext = os.path.splitext(filename)
+    print('hello! \n')
     orig_path = os.path.join(landing_upload_folder, filename)
 
     # Move file out of landing zone
@@ -62,17 +63,17 @@ def uploaded_file():
     new_filename = "raw" + base + new_ext
     new_path = os.path.join(proc_upload_folder, new_filename)
     # TODO: change this when I figure out how to set area to extend
-    downsize = ['convert', # use convert not mogrify to not overwrite orig
-           raw_path, # input fn
-           '-resize', '128x128^', # ^ => min size
-           '-gravity', 'center',  # do crop in center of photo
-           '-crop', '150x150+0+0', # crop to 150x150 square
-           '-auto-orient', # orient the photo
-           new_path] # output fn
-    subprocess.call(downsize)
+   # downsize = ['convert', # use convert not mogrify to not overwrite orig
+    #       raw_path, # input fn
+     #      '-resize', '128x128^', # ^ => min size
+      #     '-gravity', 'center',  # do crop in center of photo
+       #    '-crop', '150x150+0+0', # crop to 150x150 square
+        #   '-auto-orient', # orient the photo
+         #  new_path] # output fn
+    #subprocess.call(downsize)
 
     # now work with image in new_path to run analysis
     # run completion model
     # return / generate new image
 
-    return
+    return jsonify(dict(filename=new_filename))
