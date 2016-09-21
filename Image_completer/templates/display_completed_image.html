@@ -16,12 +16,6 @@
 
 
     <style>
-
-        html, body
-        {
-        height: 100%
-        }
-
         h1 {text-align: center;}
         h3 {text-align: left;}
         p {text-align: center;}
@@ -43,8 +37,8 @@
         .image_container
         {
         max-width: 80%;
-        max-height: 40%;
-        display: table;
+        max-height: 50%;
+        display: block;
         margin: auto;
         background-color: white;
         position: relative;
@@ -58,12 +52,18 @@
         .image
         {
         max-width: 90%;
-        max-height: 40%;
+        max-height: 90%;
+        min-width: 70%;
+        min-height: 70%;
         display: block;
         margin: auto;
-        display: table-cell;
         outline: 2px solid black;
 
+        }
+
+        .button-form
+        {
+        display: inline;
         }
 
 
@@ -95,10 +95,13 @@
 
           <div class="inner cover">
             <h1 class="cover-heading">Image Completion with Deep Learning</h1>
-            <p class="lead">Select the area to replace or extend </p>
-              <p class="lead">Or  <a href="random_mask">apply a random mask</a>  </p>
+            <p class="lead">Your masked image, downsampled to 64 x 64:</p>
 
-
+        <form class = "button-form">
+          <input type = "button" value="Restart" class="btn btn-lg btn-default" id="back" onclick="location.href='/'">
+            <br>
+        </form>
+         <br>
       <div class="image_container">
           <center>
          <img class = "image" src={{image_path}}>
@@ -106,9 +109,10 @@
       </div>
 
 
-                <br>
-                <br>
-                <br>
+
+            <br>
+            <br>
+            <br>
           <div class="mastfoot">
             <div class="inner">
               <p>Cover template for <a href="http://getbootstrap.com">Bootstrap</a>, by <a href="https://twitter.com/mdo">@mdo</a>.</p>

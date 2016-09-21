@@ -1,15 +1,19 @@
-from flask import render_template, request,redirect,url_for,send_from_directory, jsonify
+from flask import render_template, request,redirect,url_for,send_from_directory, jsonify, session
 from Image_completer import app
 import werkzeug
 import os.path
 import shutil
-import subprocess
+from scipy import ndimage, misc
+import random
+import numpy as np
+from PIL import Image
 
-landing_upload_folder = "Image_completer/static/upload_landing"
-raw_upload_folder = "Image_completer/raw_uploads"
-proc_upload_folder = "Image_completer/proc_uploads"
+landing_upload_folder = "Image_completer/static/upload_landing/"
+raw_upload_folder = "Image_completer/static/raw_uploads/"
+proc_upload_folder = "Image_completer/static/proc_uploads/"
+masked_folder = "Image_completer/static/masked_images/"
+completed_folder = "Image_completer/static/completed_images/"
 
-# TODO: check to make sure all these can work
 allowed_extensions = set(['jpg', 'jpeg', 'gif', 'png',
                           'eps', 'raw', 'bmp',
                           'tif', 'tiff',
@@ -26,11 +30,6 @@ def allowed_file(filename):
 def home():
 	return render_template("drop_image.html")
 
-@app.route('/image')
-def display_image():
-    return render_template("display_image.html")
-
-
 # dropzone activates this
 @app.route('/flask-upload', methods=['POST'])
 def upload_file():
@@ -40,40 +39,114 @@ def upload_file():
             filename = werkzeug.secure_filename(file.filename)
             file.save(os.path.join(landing_upload_folder, filename))
             return redirect(url_for('file_upload', filename = filename))
-    return
+    return 'error'
 
 @app.route('/file_upload')
 def file_upload():
     filename = request.args.get("filename")
-    base, ext = os.path.splitext(filename)
-    print('hello! \n')
     orig_path = os.path.join(landing_upload_folder, filename)
 
     # Move file out of landing zone
     raw_path = os.path.join(raw_upload_folder, "raw"+filename)
-
     shutil.copy(orig_path, raw_path)
 
-    # Downsample and crop
-    #
-    # Might want to resize rather than crop so that I actually have
-    # all the pixels contributing.
-    # Force image format to png.
-    new_ext = '.png'
-    new_filename = "raw" + base + new_ext
-    new_path = os.path.join(proc_upload_folder, new_filename)
-    # TODO: change this when I figure out how to set area to extend
-   # downsize = ['convert', # use convert not mogrify to not overwrite orig
-    #       raw_path, # input fn
-     #      '-resize', '128x128^', # ^ => min size
-      #     '-gravity', 'center',  # do crop in center of photo
-       #    '-crop', '150x150+0+0', # crop to 150x150 square
-        #   '-auto-orient', # orient the photo
-         #  new_path] # output fn
-    #subprocess.call(downsize)
+    session['image_file'] = "raw"+filename
+    return 'uploaded'
 
-    # now work with image in new_path to run analysis
-    # run completion model
-    # return / generate new image
+@app.route('/image')
+def display_image():
+    filename = session.get('image_file',False)
+    if filename==False:
+        filename='rawtest.png'
+    return render_template("display_image.html", image_path="../static/raw_uploads/"+filename)
 
-    return jsonify(dict(filename=new_filename))
+
+@app.route('/random_mask')
+def apply_mask():
+    filename = session.get('image_file', False)
+    if filename==False:
+        filename='rawtest.png'
+
+    in_path = raw_upload_folder+filename
+    proc_filename = filename.strip('raw')
+    proc_path = proc_upload_folder+proc_filename
+    masked_path = masked_folder+proc_filename
+    in_image = ndimage.imread(in_path, mode='RGB').astype(float)
+
+    im_size = 64
+    pixel_depth = 255.0
+    new_image = (misc.imresize(in_image, (im_size,im_size,3))-pixel_depth/2) / pixel_depth
+    misc.imsave(proc_path, new_image)
+
+    n = random.randint(1,6)
+    mask = np.zeros([64,64,3])
+    not_mask = np.ones([64,64,3])
+    noise_mat = np.random.normal(size=[64,64,3], scale = 0.05)
+    l = 8
+    if n==1:
+        mask[:, 0:l, :] = noise_mat[:, 0:l, :]
+        not_mask[:, 0:l, :] = 0.0
+    elif n==2:
+        mask[0:l, :,:] = noise_mat[0:l, :, :]
+        not_mask[0:l, :,:] = 0.0
+    elif n==3:
+        mask[-l:, :,:] = noise_mat[-l:, :, :]
+        not_mask[-l:, :,:] = 0.0
+    elif n==4:
+        mask[:,-l:,] = noise_mat[:,-l:,]
+        not_mask[:,-l:,] = 0.0
+    else:
+        mask[8:20, 8:20,:] = noise_mat[8:20, 8:20,:]
+        not_mask[8:20, 8:20,:] = 0.0
+
+    masked_image = np.add(np.multiply(new_image,not_mask), mask)
+    misc.imsave(masked_path, masked_image)
+    print(n)
+    session['n_mask'] = n
+
+    return render_template("display_masked_image.html", image_path="../static/masked_images/"+proc_filename)
+
+@app.route('/image-complete')
+def complete_image():
+    n = session.get('n_mask')
+    print(n)
+    filename = session.get('image_file', False)
+    if filename==False:
+        filename='rawtest.png'
+    filename = filename.strip('raw')
+    in_path = proc_upload_folder+filename
+    origin_path = raw_upload_folder+"raw"+filename
+    image = ndimage.imread(in_path, mode='RGB').astype(float)
+    original_im = ndimage.imread(origin_path, mode='RGB').astype(float)
+    x_ = original_im.shape[0]
+    y_ = original_im.shape[1]
+    big_not_mask = np.ones([x_,y_,3])
+    lx = 8*np.ceil(x_/64)
+    ly = 8*np.ceil(y_/64)
+    mx = 8*np.floor(x_/64)
+    my = 8*np.floor(y_/64)
+    nx = 20*np.ceil(x_/64)
+    ny = 20*np.ceil(y_/64)
+    if n==1:
+        big_not_mask[:, 0:ly, :] = 0.0
+    elif n==2:
+        big_not_mask[0:lx, :,:] = 0.0
+    elif n==3:
+        big_not_mask[-lx:, :,:] = 0.0
+    elif n==4:
+        big_not_mask[:,-ly:,] = 0.0
+    else:
+        big_not_mask[mx:nx, my:ny,:] = 0.0
+
+    big_mask = 1-big_not_mask
+
+    big_image = misc.imresize(image,(x_,y_,3), interp = 'lanczos')
+
+    complete_im = np.add(np.multiply(original_im, big_not_mask),np.multiply(big_image,big_mask))
+    completed_path = completed_folder+filename
+    misc.imsave(completed_path, complete_im)
+    return render_template("display_completed_image.html", image_path="../static/completed_images/"+filename)
+
+
+# set the secret key.
+app.secret_key = os.urandom(24)

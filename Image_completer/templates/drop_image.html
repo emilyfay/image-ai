@@ -21,6 +21,10 @@
   <script type="text/javascript" src="../static/js/app.js"></script>
 
     <style>
+        html, body
+        {
+        height: 100%
+        }
         h1 {text-align: center;}
         h3 {text-align: left;}
         p {text-align: center;}
@@ -89,7 +93,8 @@
 
         </form>
             <center>
-            <input type = "button" value="Next" class="btn btn-lg btn-default" id="next" onclick="location.href='image'">
+                <br>
+                    <input type = "button" value="Submit" class="btn btn-lg btn-default" id="next" onclick="location.href='image'">
                 </center>
 
           <div class="mastfoot">
@@ -110,7 +115,6 @@
 
 
 Dropzone.options.myDropzone = {
-    maxFilesize: 2,
     autoProcessQueue: true,
     init: function() {
         var next = document.getElementById("next");
