@@ -2,6 +2,7 @@ import os.path
 import random, string
 import shutil
 import subprocess
+import werkzeug
 
 import numpy as np
 from flask import render_template, request,redirect,url_for, session
@@ -63,7 +64,7 @@ def upload_file():
         file = request.files['file']
         filename = file.filename
         if file and allowed_file(file.filename):
-            #filename = werkzeug.secure_filename(file.filename)
+            filename = werkzeug.secure_filename(file.filename)
             file.save(os.path.join(landing_upload_folder, filename))
             return redirect(url_for('file_upload', filename = filename))
     return 'error'
@@ -85,17 +86,21 @@ def display_image():
     filename = session.get('image_file',False)
     if filename==False:
         filename='rawDEMO.png'
+    r_filename = randword(6)+filename.strip('raw')
+    session['r_image_file'] = r_filename
+
     return render_template("display_image.html", image_path="../static/raw_uploads/"+filename)
 
 
 @app.route('/random_mask')
 def apply_mask():
     filename = session.get('image_file', False)
+    r_filename = session.get('r_image_file', False)
     if filename==False:
         filename='rawDEMO.png'
 
     in_path = raw_upload_folder+filename
-    proc_filename = randword(6)+filename.strip('raw')
+    proc_filename = r_filename
     proc_path = proc_upload_folder+proc_filename
     masked_path = masked_folder+proc_filename
     in_image = ndimage.imread(in_path, mode='RGB').astype(float)
@@ -130,7 +135,7 @@ def apply_mask():
     misc.imsave(masked_path, masked_image)
 
     session['n_mask'] = n
-    session['r_image_file'] = proc_filename
+
 
     return render_template("display_masked_image.html", image_path="../static/masked_images/"+proc_filename)
 
