@@ -1,10 +1,9 @@
 import os.path
-import random
+import random, string
 import shutil
 import subprocess
 
 import numpy as np
-import werkzeug
 from flask import render_template, request,redirect,url_for, session
 from scipy import ndimage, misc
 
@@ -43,6 +42,10 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in allowed_extensions
 
+def randword(length):
+
+    return''.join(random.choice(string.lowercase) for i in range(length))
+
 clean_dir()
 
 
@@ -50,6 +53,7 @@ clean_dir()
 @app.route('/home')
 def home():
     clean_dir()
+    session.clear()
     return render_template("drop_image.html")
 
 # dropzone activates this
@@ -57,8 +61,9 @@ def home():
 def upload_file():
     if request.method == 'POST':
         file = request.files['file']
+        filename = file.filename
         if file and allowed_file(file.filename):
-            filename = werkzeug.secure_filename(file.filename)
+            #filename = werkzeug.secure_filename(file.filename)
             file.save(os.path.join(landing_upload_folder, filename))
             return redirect(url_for('file_upload', filename = filename))
     return 'error'
@@ -90,7 +95,7 @@ def apply_mask():
         filename='rawDEMO.png'
 
     in_path = raw_upload_folder+filename
-    proc_filename = filename.strip('raw')
+    proc_filename = randword(6)+filename.strip('raw')
     proc_path = proc_upload_folder+proc_filename
     masked_path = masked_folder+proc_filename
     in_image = ndimage.imread(in_path, mode='RGB').astype(float)
@@ -125,6 +130,7 @@ def apply_mask():
     misc.imsave(masked_path, masked_image)
 
     session['n_mask'] = n
+    session['r_image_file'] = proc_filename
 
     return render_template("display_masked_image.html", image_path="../static/masked_images/"+proc_filename)
 
@@ -133,12 +139,13 @@ def complete_image():
 
     n = session.get('n_mask')
     filename = session.get('image_file', False)
+    r_filename = session.get('r_image_file', False)
     if filename==False:
         filename='rawDEMO.png'
     filename = filename.strip('raw')
     origin_path = raw_upload_folder+"raw"+filename
-    masked_path = masked_folder+filename
-    filled_path = filled_folder+"AI"+filename
+    masked_path = masked_folder+r_filename
+    filled_path = filled_folder+"AI"+r_filename
     sub_script = "python image_fill_deconv.py --image_path %s --out_path %s" %(masked_path,filled_path)
     subprocess.call(sub_script, shell = True)
     print('success!')
@@ -171,9 +178,9 @@ def complete_image():
     big_filled = misc.imresize(filled_image,(x_,y_,3), interp = 'lanczos')
 
     complete_im = np.add(np.multiply(original_im, big_not_mask),np.multiply(big_filled,big_mask))
-    completed_path = completed_folder+filename
+    completed_path = completed_folder+r_filename
     misc.imsave(completed_path, complete_im)
-    return render_template("display_completed_image.html", image_path="../static/completed_images/"+filename)
+    return render_template("display_completed_image.html", image_path="../static/completed_images/"+r_filename)
 
 
 # set the secret key.
