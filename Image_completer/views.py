@@ -17,16 +17,19 @@ masked_folder = "Image_completer/static/masked_images/"
 filled_folder = "Image_completer/static/filled_images/"
 completed_folder = "Image_completer/static/completed_images/"
 
-folder_list = [landing_upload_folder,raw_upload_folder,proc_upload_folder,masked_folder,completed_folder]
-for folder in folder_list:
-    for the_file in os.listdir(folder):
-        if "test" not in the_file:
-            file_path = os.path.join(folder, the_file)
-            try:
-                if os.path.isfile(file_path):
-                    os.unlink(file_path)
-            except Exception as e:
-                print(e)
+folder_list = [landing_upload_folder,raw_upload_folder,proc_upload_folder,masked_folder,filled_folder, completed_folder]
+
+def clean_dir():
+    for folder in folder_list:
+        for the_file in os.listdir(folder):
+            if "rawDEMO" not in the_file:
+                file_path = os.path.join(folder, the_file)
+                try:
+                    if os.path.isfile(file_path):
+                        os.unlink(file_path)
+                except Exception as e:
+                    print(e)
+    return "cleaned directories"
 
 
 allowed_extensions = set(['jpg', 'jpeg', 'gif', 'png',
@@ -40,10 +43,13 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in allowed_extensions
 
+clean_dir()
+
 
 @app.route('/')
 @app.route('/home')
 def home():
+    clean_dir()
     return render_template("drop_image.html")
 
 # dropzone activates this
@@ -73,7 +79,7 @@ def file_upload():
 def display_image():
     filename = session.get('image_file',False)
     if filename==False:
-        filename='rawtest.png'
+        filename='rawDEMO.png'
     return render_template("display_image.html", image_path="../static/raw_uploads/"+filename)
 
 
@@ -81,7 +87,7 @@ def display_image():
 def apply_mask():
     filename = session.get('image_file', False)
     if filename==False:
-        filename='rawtest.png'
+        filename='rawDEMO.png'
 
     in_path = raw_upload_folder+filename
     proc_filename = filename.strip('raw')
@@ -128,7 +134,7 @@ def complete_image():
     n = session.get('n_mask')
     filename = session.get('image_file', False)
     if filename==False:
-        filename='rawtest.png'
+        filename='rawDEMO.png'
     filename = filename.strip('raw')
     origin_path = raw_upload_folder+"raw"+filename
     masked_path = masked_folder+filename
