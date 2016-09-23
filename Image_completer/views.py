@@ -1,18 +1,33 @@
-from flask import render_template, request,redirect,url_for,send_from_directory, jsonify, session
-from Image_completer import app
-import werkzeug
 import os.path
-import shutil
-from scipy import ndimage, misc
 import random
+import shutil
+import subprocess
+
 import numpy as np
-from PIL import Image
+import werkzeug
+from flask import render_template, request,redirect,url_for, session
+from scipy import ndimage, misc
+
+from Image_completer import app
 
 landing_upload_folder = "Image_completer/static/upload_landing/"
 raw_upload_folder = "Image_completer/static/raw_uploads/"
 proc_upload_folder = "Image_completer/static/proc_uploads/"
 masked_folder = "Image_completer/static/masked_images/"
+filled_folder = "Image_completer/static/filled_images/"
 completed_folder = "Image_completer/static/completed_images/"
+
+folder_list = [landing_upload_folder,raw_upload_folder,proc_upload_folder,masked_folder,completed_folder]
+for folder in folder_list:
+    for the_file in os.listdir(folder):
+        if "test" not in the_file:
+            file_path = os.path.join(folder, the_file)
+            try:
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
+            except Exception as e:
+                print(e)
+
 
 allowed_extensions = set(['jpg', 'jpeg', 'gif', 'png',
                           'eps', 'raw', 'bmp',
@@ -25,10 +40,11 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in allowed_extensions
 
+
 @app.route('/')
 @app.route('/home')
 def home():
-	return render_template("drop_image.html")
+    return render_template("drop_image.html")
 
 # dropzone activates this
 @app.route('/flask-upload', methods=['POST'])
@@ -101,32 +117,36 @@ def apply_mask():
 
     masked_image = np.add(np.multiply(new_image,not_mask), mask)
     misc.imsave(masked_path, masked_image)
-    print(n)
+
     session['n_mask'] = n
 
     return render_template("display_masked_image.html", image_path="../static/masked_images/"+proc_filename)
 
 @app.route('/image-complete')
 def complete_image():
+
     n = session.get('n_mask')
-    print(n)
     filename = session.get('image_file', False)
     if filename==False:
         filename='rawtest.png'
     filename = filename.strip('raw')
-    in_path = proc_upload_folder+filename
     origin_path = raw_upload_folder+"raw"+filename
-    image = ndimage.imread(in_path, mode='RGB').astype(float)
+    masked_path = masked_folder+filename
+    filled_path = filled_folder+"AI"+filename
+    sub_script = "python image_fill_deconv.py --image_path %s --out_path %s" %(masked_path,filled_path)
+    subprocess.call(sub_script, shell = True)
+    print('success!')
+
     original_im = ndimage.imread(origin_path, mode='RGB').astype(float)
     x_ = original_im.shape[0]
     y_ = original_im.shape[1]
     big_not_mask = np.ones([x_,y_,3])
-    lx = 8*np.ceil(x_/64)
-    ly = 8*np.ceil(y_/64)
-    mx = 8*np.floor(x_/64)
-    my = 8*np.floor(y_/64)
-    nx = 20*np.ceil(x_/64)
-    ny = 20*np.ceil(y_/64)
+    lx = int(8*np.ceil(x_/64))
+    ly = int(8*np.ceil(y_/64))
+    mx = int(8*np.floor(x_/64))
+    my = int(8*np.floor(y_/64))
+    nx = int(20*np.ceil(x_/64))
+    ny = int(20*np.ceil(y_/64))
     if n==1:
         big_not_mask[:, 0:ly, :] = 0.0
     elif n==2:
@@ -140,9 +160,11 @@ def complete_image():
 
     big_mask = 1-big_not_mask
 
-    big_image = misc.imresize(image,(x_,y_,3), interp = 'lanczos')
+    filled_image = ndimage.imread(filled_path, mode='RGB').astype(float)
 
-    complete_im = np.add(np.multiply(original_im, big_not_mask),np.multiply(big_image,big_mask))
+    big_filled = misc.imresize(filled_image,(x_,y_,3), interp = 'lanczos')
+
+    complete_im = np.add(np.multiply(original_im, big_not_mask),np.multiply(big_filled,big_mask))
     completed_path = completed_folder+filename
     misc.imsave(completed_path, complete_im)
     return render_template("display_completed_image.html", image_path="../static/completed_images/"+filename)
