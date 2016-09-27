@@ -116,11 +116,11 @@ def apply_mask():
     not_mask = np.ones([im_x_size,im_y_size,3])
     noise_mat = np.ones([im_x_size,im_y_size,3])*120
 
-    szN = np.floor(im_x_size/20)
+    szN = 2*np.floor(im_x_size/64)
 
-    x1 = im_x_size-np.floor(im_x_size/4.2)
+    x1 = im_x_size-np.floor(im_x_size/4)
     x2 = im_x_size-szN
-    y1 = im_y_size-np.floor(im_y_size/4.2)
+    y1 = im_y_size-np.floor(im_y_size/4)
     y2 = im_y_size-szN
 
     mask[x1:x2,y1:y2,:] = noise_mat[x1:x2,y1:y2,:]
@@ -134,7 +134,7 @@ def apply_mask():
     session['mask_y1'] = y1
     session['mask_y2'] = y2
 
-    return render_template("display_masked_image.html", image_path="../static/raw_uploads/"+filename)
+    return render_template("display_masked_image.html", image_path="../static/masked_images/"+r_filename)
 
 @app.route('/extend')
 def extend():
@@ -221,47 +221,47 @@ def image_extend():
 
     if edge == "T":
         # extend the top
-        image_holder = np.random.normal(size=[x_+ex_x,y_,3], scale = 0.2)
-        big_not_mask = np.ones([x_+ex_x,y_,3])
+        image_holder = np.random.normal(size=[x_+ex_x,y_,3], scale = 1)
+        big_not_mask = np.zeros([x_+ex_x,y_,3])
         image_holder[ex_x:,:,:] = in_im
-        big_not_mask[:ex_x, :,:] = 0.0
+        big_not_mask[ex_x:,:,:] = 1.0
         x1 = 0
-        x2 = int(ex_x*(64/x_))
+        x2 = int(64.0/5)
         y1 = 0
         y2 = 64
         x_f = x_+ex_x
         y_f = y_
     elif edge == "L":
         # extend left edge
-        image_holder = np.random.normal(size=[x_,y_+ex_y,3], scale = 0.2)
+        image_holder = np.random.normal(size=[x_,y_+ex_y,3], scale = 1)
         image_holder[:,ex_y:,:] = in_im
-        big_not_mask = np.ones([x_,y_+ex_y,3])
-        big_not_mask[:, :ex_y,:] = 0.0
+        big_not_mask = np.zeros([x_,y_+ex_y,3])
+        big_not_mask[:,ex_y:,:] = 1.0
         x1 = 0
         x2 = 64
         y1 = 0
-        y2 = int(ex_y*(64/y_))
+        y2 = int(64/5)
         x_f = x_
         y_f = y_+ex_y
     elif edge == "R":
         # extend right edge
-        image_holder = np.random.normal(size=[x_,y_+ex_y,3], scale = 0.2)
+        image_holder = np.random.normal(size=[x_,y_+ex_y,3], scale = 1)
         image_holder[:,:y_,:] = in_im
-        big_not_mask = np.ones([x_,y_+ex_y,3])
-        big_not_mask[:,y_:,:] = 0.0
+        big_not_mask = np.zeros([x_,y_+ex_y,3])
+        big_not_mask[:,:y_,:] = 1.0
         x1 = 0
         x2 = 64
-        y1 = 64-int(ex_y*(64/y_))
+        y1 = 64-int(64/5)
         y2 = 64
         x_f = x_
         y_f = y_+ex_y
     else:
         # extend the bottom
-        image_holder = np.random.normal(size=[x_+ex_x,y_,3], scale = 0.2)
+        image_holder = np.random.normal(size=[x_+ex_x,y_,3], scale = 1)
         image_holder[:x_,:,:] = in_im
-        big_not_mask = np.ones([x_+ex_x,y_,3])
-        big_not_mask[:x_, :,:] = 0.0
-        x1 = 64-int(ex_x*(64/x_))
+        big_not_mask = np.zeros([x_+ex_x,y_,3])
+        big_not_mask[:x_,:,:] = 1.0
+        x1 = 64-int(64/5)
         x2 = 64
         y1 = 0
         y2 = 64
@@ -278,15 +278,15 @@ def image_extend():
     subprocess.call(sub_script, shell = True)
 
     big_mask = 1-big_not_mask
-
+    rs_filled_path = filled_folder+"rsAI"+r_filename
     filled_image = ndimage.imread(filled_path, mode='RGB').astype(float)
 
     big_filled = misc.imresize(filled_image,(x_f,y_f,3))
-
+    misc.imsave(rs_filled_path, big_filled)
     complete_im = np.add(np.multiply(image_holder, big_not_mask),np.multiply(big_filled,big_mask))
     completed_path = completed_folder+r_filename
     misc.imsave(completed_path, complete_im)
-    return render_template("display_completed_image.html", ds_image_path = "../static/filled_images/"+"AI"+r_filename,image_path="../static/completed_images/"+r_filename)
+    return render_template("display_completed_image.html", ds_image_path = "../static/filled_images/"+"rsAI"+r_filename,image_path="../static/completed_images/"+r_filename)
 
 
 # set the secret key.
