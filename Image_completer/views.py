@@ -10,19 +10,19 @@ from scipy import ndimage, misc
 
 from Image_completer import app
 
-landing_upload_folder = "Image_completer/static/upload_landing/"
-raw_upload_folder = "Image_completer/static/raw_uploads/"
-proc_upload_folder = "Image_completer/static/proc_uploads/"
-masked_folder = "Image_completer/static/masked_images/"
-filled_folder = "Image_completer/static/filled_images/"
-completed_folder = "Image_completer/static/completed_images/"
+landing_upload_folder = "/home/ubuntu/web_app_AWS/Image_completer/static/upload_landing/"
+raw_upload_folder = "/home/ubuntu/web_app_AWS/Image_completer/static/raw_uploads/"
+proc_upload_folder = "/home/ubuntu/web_app_AWS/Image_completer/static/proc_uploads/"
+masked_folder = "/home/ubuntu/web_app_AWS/Image_completer/static/masked_images/"
+filled_folder = "/home/ubuntu/web_app_AWS/Image_completer/static/filled_images/"
+completed_folder = "/home/ubuntu/web_app_AWS/Image_completer/static/completed_images/"
 
 folder_list = [landing_upload_folder,raw_upload_folder,proc_upload_folder,masked_folder,filled_folder, completed_folder]
 
 def clean_dir():
     for folder in folder_list:
         for the_file in os.listdir(folder):
-            if "rawDEMO" not in the_file:
+            if "DEMO" not in the_file:
                 file_path = os.path.join(folder, the_file)
                 try:
                     if os.path.isfile(file_path):
@@ -62,7 +62,6 @@ def home():
 def upload_file():
     if request.method == 'POST':
         file = request.files['file']
-        filename = file.filename
         if file and allowed_file(file.filename):
             filename = werkzeug.secure_filename(file.filename)
             file.save(os.path.join(landing_upload_folder, filename))
@@ -85,7 +84,11 @@ def file_upload():
 def display_image():
     filename = session.get('image_file',False)
     if filename==False:
-        filename='rawDEMO.png'
+        filename = "DEMO.png"
+        orig_path = os.path.join(raw_upload_folder, filename)
+        raw_path = os.path.join(raw_upload_folder, "raw"+filename)
+        shutil.copy(orig_path, raw_path)
+
     r_filename = randword(6)+filename.strip('raw')
     session['r_image_file'] = r_filename
 
@@ -96,96 +99,158 @@ def display_image():
 def apply_mask():
     filename = session.get('image_file', False)
     r_filename = session.get('r_image_file', False)
+    if r_filename==False:
+        return redirect(url_for('home'))
     if filename==False:
-        filename='rawDEMO.png'
+        filename = "DEMO.png"
 
     in_path = raw_upload_folder+filename
     proc_filename = r_filename
-    proc_path = proc_upload_folder+proc_filename
     masked_path = masked_folder+proc_filename
-    in_image = ndimage.imread(in_path, mode='RGB').astype(float)
+    in_image = (ndimage.imread(in_path, mode='RGB').astype(float))
 
-    im_size = 64
-    pixel_depth = 255.0
-    new_image = (misc.imresize(in_image, (im_size,im_size,3))-pixel_depth/2) / pixel_depth
-    misc.imsave(proc_path, new_image)
+    im_x_size = in_image.shape[0]
+    im_y_size = in_image.shape[1]
 
-    n = random.randint(1,6)
-    mask = np.zeros([64,64,3])
-    not_mask = np.ones([64,64,3])
-    noise_mat = np.random.normal(size=[64,64,3], scale = 0.05)
-    l = 8
-    if n==1:
-        mask[:, 0:l, :] = noise_mat[:, 0:l, :]
-        not_mask[:, 0:l, :] = 0.0
-    elif n==2:
-        mask[0:l, :,:] = noise_mat[0:l, :, :]
-        not_mask[0:l, :,:] = 0.0
-    elif n==3:
-        mask[-l:, :,:] = noise_mat[-l:, :, :]
-        not_mask[-l:, :,:] = 0.0
-    elif n==4:
-        mask[:,-l:,] = noise_mat[:,-l:,]
-        not_mask[:,-l:,] = 0.0
-    else:
-        mask[8:20, 8:20,:] = noise_mat[8:20, 8:20,:]
-        not_mask[8:20, 8:20,:] = 0.0
+    mask = np.zeros([im_x_size,im_y_size,3])
+    not_mask = np.ones([im_x_size,im_y_size,3])
+    noise_mat = np.ones([im_x_size,im_y_size,3])*120
 
-    masked_image = np.add(np.multiply(new_image,not_mask), mask)
+    szN = np.floor(im_x_size/)
+
+    x1 = im_x_size-np.floor(im_x_size/4.2)
+    x2 = im_x_size-szN
+    y1 = im_y_size-np.floor(im_y_size/4.2)
+    y2 = im_y_size-szN
+
+    mask[x1:x2,y1:y2,:] = noise_mat[x1:x2,y1:y2,:]
+    not_mask[x1:x2,y1:y2,:] = 0.0
+
+    masked_image = np.add(np.multiply(in_image,not_mask), mask)
     misc.imsave(masked_path, masked_image)
 
-    session['n_mask'] = n
-
+    session['mask_x1'] = x1
+    session['mask_x2'] = x2
+    session['mask_y1'] = y1
+    session['mask_y2'] = y2
 
     return render_template("display_masked_image.html", image_path="../static/masked_images/"+proc_filename)
+
+@app.route('/extend')
+def extend():
+    filename = session.get('image_file', False)
+    r_filename = session.get('r_image_file', False)
+    if r_filename==False:
+        return redirect(url_for('home'))
+    if filename==False:
+        filename = "DEMO.png"
+
+    in_path = raw_upload_folder+filename
+    proc_filename = r_filename
+    masked_path = masked_folder+proc_filename
+    in_image = (ndimage.imread(in_path, mode='RGB').astype(float))
+
+    im_x_size = in_image.shape[0]
+    im_y_size = in_image.shape[1]
+    extend_sz = 20*(np.floor(im_x_size/64))
+
+    image_holder = np.ones([im_x_size,im_y_size+extend_sz,3])*120
+    image_holder[:im_x_size,extend_sz:im_y_size+extend_sz,:] = in_image
+
+    x1 = 0
+    x2 = (im_x_size)*(np.floor(im_x_size/64))
+    y1 = 0
+    y2 = 20*(np.floor(im_y_size/64))
+
+    misc.imsave(masked_path, image_holder)
+
+    session['mask_x1'] = x1
+    session['mask_x2'] = x2
+    session['mask_y1'] = y1
+    session['mask_y2'] = y2
+
+    return render_template("display_extended_image.html", image_path="../static/masked_images/"+proc_filename)
+
+
 
 @app.route('/image-complete')
 def complete_image():
 
-    n = session.get('n_mask')
+    x1 = session.get('mask_x1')
+    x2 = session.get('mask_x2')
+    y1 = session.get('mask_y1')
+    y2 = session.get('mask_y2')
+
+    print('here')
     filename = session.get('image_file', False)
     r_filename = session.get('r_image_file', False)
+    if r_filename==False:
+        return redirect(url_for('home'))
     if filename==False:
-        filename='rawDEMO.png'
+        filename = "DEMO.png"
+    print('here')
+
     filename = filename.strip('raw')
     origin_path = raw_upload_folder+"raw"+filename
-    masked_path = masked_folder+r_filename
     filled_path = filled_folder+"AI"+r_filename
-    sub_script = "python image_fill_deconv.py --image_path %s --out_path %s" %(masked_path,filled_path)
-    subprocess.call(sub_script, shell = True)
-    print('success!')
-
     original_im = ndimage.imread(origin_path, mode='RGB').astype(float)
     x_ = original_im.shape[0]
     y_ = original_im.shape[1]
+    sub_script = "python /home/ubuntu/web_app_AWS/image_fill_deconv.py --image_path %s --out_path %s --mask_x1 %i --mask_x2 %i --mask_y1 %i --mask_y2 %i" %(origin_path,filled_path,int(x1*64/x_),int(x2*64/x_),int(y1*64/y_),int(y2*64/y_))
+    print('subprocess')
+    subprocess.call(sub_script, shell = True)
+
+
     big_not_mask = np.ones([x_,y_,3])
-    lx = int(8*np.ceil(x_/64))
-    ly = int(8*np.ceil(y_/64))
-    mx = int(8*np.floor(x_/64))
-    my = int(8*np.floor(y_/64))
-    nx = int(20*np.ceil(x_/64))
-    ny = int(20*np.ceil(y_/64))
-    if n==1:
-        big_not_mask[:, 0:ly, :] = 0.0
-    elif n==2:
-        big_not_mask[0:lx, :,:] = 0.0
-    elif n==3:
-        big_not_mask[-lx:, :,:] = 0.0
-    elif n==4:
-        big_not_mask[:,-ly:,] = 0.0
-    else:
-        big_not_mask[mx:nx, my:ny,:] = 0.0
+
+    big_not_mask[x1:x2, y1:y2,:] = 0.0
 
     big_mask = 1-big_not_mask
 
     filled_image = ndimage.imread(filled_path, mode='RGB').astype(float)
 
-    big_filled = misc.imresize(filled_image,(x_,y_,3), interp = 'lanczos')
+    big_filled = misc.imresize(filled_image,(x_,y_,3))
 
     complete_im = np.add(np.multiply(original_im, big_not_mask),np.multiply(big_filled,big_mask))
     completed_path = completed_folder+r_filename
     misc.imsave(completed_path, complete_im)
-    return render_template("display_completed_image.html", image_path="../static/completed_images/"+r_filename)
+    return render_template("display_completed_image.html", ds_image_path = "../static/filled_images/"+"AI"+r_filename,image_path="../static/completed_images/"+r_filename)
+
+@app.route('/image-extend')
+def extend_image():
+
+    x1 = session.get('mask_x1')
+    x2 = session.get('mask_x2')
+    y1 = session.get('mask_y1')
+    y2 = session.get('mask_y2')
+
+    r_filename = session.get('r_image_file', False)
+    if r_filename==False:
+        return redirect(url_for('home'))
+
+    origin_path = masked_folder+r_filename
+    filled_path = filled_folder+"AI"+r_filename
+    sub_script = "python /home/ubuntu/web_app_AWS/image_fill_deconv.py --image_path %s --out_path %s --mask_x1 %i --mask_x2 %i --mask_y1 %i --mask_y2 %i" %(origin_path,filled_path,x1,x2,y1,y2)
+    print('subprocess')
+    subprocess.call(sub_script, shell = True)
+
+    original_im = ndimage.imread(origin_path, mode='RGB').astype(float)
+    x_ = original_im.shape[0]
+    y_ = original_im.shape[1]
+    big_not_mask = np.ones([x_,y_,3])
+
+    big_not_mask[x1:x2, y1:y2,:] = 0.0
+
+    big_mask = 1-big_not_mask
+
+    filled_image = ndimage.imread(filled_path, mode='RGB').astype(float)
+
+    big_filled = misc.imresize(filled_image,(x_,y_,3))
+
+    complete_im = np.add(np.multiply(original_im, big_not_mask),np.multiply(big_filled,big_mask))
+    completed_path = completed_folder+r_filename
+    misc.imsave(completed_path, complete_im)
+    return render_template("display_completed_image.html", ds_image_path = "../static/filled_images/"+"AI"+r_filename,image_path="../static/completed_images/"+r_filename)
 
 
 # set the secret key.

@@ -76,7 +76,7 @@
 
           <div class="inner cover">
             <h1 class="cover-heading">Image Completion with Deep Learning</h1>
-            <p class="lead">To get started, upload an image you want to extend. </p>
+            <p class="lead">To get started, upload an image </p>
               <p class="sub-lead">The model is trained to work for headshots of people. </p>
 
 
@@ -120,6 +120,7 @@
 
 Dropzone.options.myDropzone = {
     autoProcessQueue: true,
+    maxFiles: 1,
     init: function() {
         var next = document.getElementById("next");
         var demo = document.getElementById("demo");

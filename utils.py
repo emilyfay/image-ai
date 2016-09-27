@@ -58,7 +58,8 @@ def transform(image, npx=64, is_crop=True):
     if is_crop:
         cropped_image = center_crop(image, npx)
     else:
-        cropped_image = image
+        cropped_image = scipy.misc.imresize(image, (npx,npx,3))
+
     return np.array(cropped_image)/127.5 - 1.
 
 def inverse_transform(images):

@@ -38,26 +38,38 @@
         {
         max-width: 80%;
         max-height: 50%;
-        display: block;
-        margin: auto;
+        margin: 0;
         background-color: white;
         position: relative;
-        padding: 100px 30px;
+        padding: 30px 30px;
         outline: 2px solid #92b0b3;
         outline-offset: 5px;
 
 
         }
 
-        .image
+        .image_1
         {
-        max-width: 90%;
-        max-height: 90%;
-        min-width: 70%;
-        min-height: 70%;
-        display: block;
+        width: 200px;
+        height: 200px;
+        display: inline;
+        position: relative;
+        left: 0;
+        outline: 2px solid black;
+        float: left;
+
+        }
+          .image_2
+        {
+        max-width: 220px;
+        max-height: 220px;
+        min-width: 200px;
+        min-height: 200px;
+        display: inline;
         margin: auto;
         outline: 2px solid black;
+        right: 0;
+        position: relative;
 
         }
 
@@ -65,6 +77,7 @@
         {
         display: inline;
         }
+
 
 
 
@@ -102,11 +115,14 @@
             <br>
         </form>
          <br>
+              <center>
       <div class="image_container">
-          <center>
-         <img class = "image" src={{image_path}}>
-              </center>
+
+         <img class = "image_1" src={{ds_image_path}}>
+          <img class = "image_2" src={{image_path}}>
+
       </div>
+                  </center>
 
 
 

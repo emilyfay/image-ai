@@ -212,7 +212,7 @@
     display: inline-block;
     vertical-align: top;
     margin: 16px;
-    min-height: 100px; }
+    min-height: 250px; }
     .dropzone .dz-preview:hover {
       z-index: 1000; }
       .dropzone .dz-preview:hover .dz-details {
@@ -288,6 +288,8 @@
       display: block;
       z-index: 10; }
       .dropzone .dz-preview .dz-image img {
+        width: 250px;
+        height: 250px;
         display: block; }
     .dropzone .dz-preview.dz-success .dz-success-mark {
       -webkit-animation: passing-through 3s cubic-bezier(0.77, 0, 0.175, 1);

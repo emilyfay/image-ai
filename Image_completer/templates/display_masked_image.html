@@ -40,9 +40,9 @@
 
         .image_container
         {
-        max-width: 80%;
-        max-height: 50%;
-        display: block;
+        width: 70%;
+        height: 30%;
+        display: table;
         margin: auto;
         background-color: white;
         position: relative;
@@ -55,15 +55,17 @@
 
         .image
         {
-        max-width: 90%;
-        max-height: 90%;
-        min-width: 70%;
-        min-height: 70%;
+        max-width: 50%;
+        max-height: 50%;
+        min-width: 30%;
+        min-height: 30%;
         display: block;
         margin: auto;
+        display: table-cell;
         outline: 2px solid black;
 
         }
+
 
         .button-form
         {
@@ -99,7 +101,7 @@
 
           <div class="inner cover">
             <h1 class="cover-heading">Image Completion with Deep Learning</h1>
-            <p class="lead">Your masked image, downsampled to 64 x 64:</p>
+            <p class="lead">Your masked image:</p>
 
         <form class = "button-form">
           <input type = "button" value="Back" class="btn btn-lg btn-default" id="back" onclick="location.href='image'">
@@ -116,6 +118,10 @@
 
 
             <br>
+                 <form class = "button-form">
+          <input type = "button" value="Restart" class="btn btn-lg btn-default" id="back" onclick="location.href='/'">
+            <br>
+        </form>
             <br>
             <br>
           <div class="mastfoot">
