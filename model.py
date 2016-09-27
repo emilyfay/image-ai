@@ -148,7 +148,7 @@ class DCGAN(object):
         batch_idxs = min(len(data), config.train_size) // self.batch_size
         BS = config.batch_size-1
 
-        for idx in xrange(0, batch_idxs):
+        for idx in xrange(0, 1):
 
             batch_files = data[idx*BS:(idx+1)*BS]
             in_files = [config.image_path]
