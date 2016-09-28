@@ -22,7 +22,7 @@ folder_list = [landing_upload_folder,raw_upload_folder,proc_upload_folder,masked
 def clean_dir():
     for folder in folder_list:
         for the_file in os.listdir(folder):
-            if "DEMO" not in the_file:
+            if the_file != "DEMO.png":
                 file_path = os.path.join(folder, the_file)
                 try:
                     if os.path.isfile(file_path):
@@ -57,6 +57,10 @@ def home():
     session.clear()
     return render_template("drop_image.html")
 
+@app.route('/about')
+def about():
+    return render_template("about.html")
+
 # dropzone activates this
 @app.route('/flask-upload', methods=['POST'])
 def upload_file():
@@ -80,31 +84,20 @@ def file_upload():
     session['image_file'] = "raw"+filename
     return 'uploaded'
 
-@app.route('/image')
-def display_image():
-    filename = session.get('image_file',False)
-    if filename==False:
-        filename = "DEMO.png"
-        orig_path = os.path.join(raw_upload_folder, filename)
-        raw_path = os.path.join(raw_upload_folder, "raw"+filename)
-        shutil.copy(orig_path, raw_path)
-
-    r_filename = randword(6)+filename.strip('raw')
-    session['r_image_file'] = r_filename
-
-    return render_template("display_image.html", image_path="../static/raw_uploads/"+filename)
-
-
 @app.route('/random_mask')
 def apply_mask():
     filename = session.get('image_file', False)
-    r_filename = session.get('r_image_file', False)
-    if r_filename==False:
-        return redirect(url_for('home'))
     if filename==False:
         filename = "DEMO.png"
 
-    in_path = raw_upload_folder+filename
+    orig_path = os.path.join(raw_upload_folder, filename)
+    r_filename = randword(6)+filename
+    raw_path = os.path.join(raw_upload_folder, r_filename)
+    shutil.copy(orig_path, raw_path)
+
+    session['r_image_file'] = r_filename
+
+    in_path = raw_upload_folder+r_filename
     proc_filename = r_filename
     masked_path = masked_folder+proc_filename
     in_image = (ndimage.imread(in_path, mode='RGB').astype(float))
@@ -224,7 +217,7 @@ def image_extend():
         image_holder = np.random.normal(size=[x_+ex_x,y_,3], scale = 1)
         big_not_mask = np.zeros([x_+ex_x,y_,3])
         image_holder[ex_x:,:,:] = in_im
-        big_not_mask[ex_x:,:,:] = 1.0
+        big_not_mask[ex_x+1:,:,:] = 1.0
         x1 = 0
         x2 = int(64.0/5)
         y1 = 0
@@ -236,7 +229,7 @@ def image_extend():
         image_holder = np.random.normal(size=[x_,y_+ex_y,3], scale = 1)
         image_holder[:,ex_y:,:] = in_im
         big_not_mask = np.zeros([x_,y_+ex_y,3])
-        big_not_mask[:,ex_y:,:] = 1.0
+        big_not_mask[:,ex_y+1:,:] = 1.0
         x1 = 0
         x2 = 64
         y1 = 0
@@ -248,7 +241,7 @@ def image_extend():
         image_holder = np.random.normal(size=[x_,y_+ex_y,3], scale = 1)
         image_holder[:,:y_,:] = in_im
         big_not_mask = np.zeros([x_,y_+ex_y,3])
-        big_not_mask[:,:y_,:] = 1.0
+        big_not_mask[:,:y_-1,:] = 1.0
         x1 = 0
         x2 = 64
         y1 = 64-int(64/5)
@@ -260,7 +253,7 @@ def image_extend():
         image_holder = np.random.normal(size=[x_+ex_x,y_,3], scale = 1)
         image_holder[:x_,:,:] = in_im
         big_not_mask = np.zeros([x_+ex_x,y_,3])
-        big_not_mask[:x_,:,:] = 1.0
+        big_not_mask[:x_-1,:,:] = 1.0
         x1 = 64-int(64/5)
         x2 = 64
         y1 = 0
@@ -286,7 +279,7 @@ def image_extend():
     complete_im = np.add(np.multiply(image_holder, big_not_mask),np.multiply(big_filled,big_mask))
     completed_path = completed_folder+r_filename
     misc.imsave(completed_path, complete_im)
-    return render_template("display_completed_image.html", ds_image_path = "../static/filled_images/"+"rsAI"+r_filename,image_path="../static/completed_images/"+r_filename)
+    return render_template("display_completed_image.html", ds_image_path="../static/raw_uploads/"+r_filename,image_path="../static/completed_images/"+r_filename)
 
 
 # set the secret key.
