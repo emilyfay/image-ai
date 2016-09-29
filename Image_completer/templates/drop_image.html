@@ -64,6 +64,11 @@
         font-size: 2.2vw;
         }
 
+        #error_message
+        {
+        visibility: hidden;
+        }
+
 
 
 
@@ -102,6 +107,7 @@
 
                     <div class="dz-message">
                         <span>Click to select an image or drag and drop here</span>
+                        <span id="error_message">Error, try another file</span>
                     </div>
 
                     <div class = "fallback">
@@ -145,11 +151,13 @@
 Dropzone.options.myDropzone = {
     autoProcessQueue: true,
     maxFiles: 1,
+    maxFilesize: 1024,
     init: function() {
         var next = document.getElementById("next");
         var demo = document.getElementById("demo");
         var intro = document.getElementById("intro");
         var intro2 = document.getElementById("intro2");
+        var error = document.getElementById("error_message");
 
         this.on("addedfile", function(file){
         console.log("addedfile");
@@ -167,7 +175,7 @@ Dropzone.options.myDropzone = {
             intro.style.visibility = "hidden";
             intro2.style.visibility = "hidden"});
 
-       this.on("error", function(file) {console.log("error");});
+       this.on("error", function(file) {console.log("error"); error.visibility = "visible";});
 
        this.on("removedfile", function(file) {
             next.style.visibility = "hidden";
