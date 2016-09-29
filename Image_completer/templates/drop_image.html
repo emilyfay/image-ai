@@ -46,7 +46,24 @@
         #next
             {
             visibility: hidden;
+            font-size: 2.0rem;
             }
+
+        #intro
+            {
+            margin-bottom: 0;
+            }
+
+        #intro2
+        {
+        font-size: 2vw;
+        }
+
+        .links
+        {
+        font-size: 2.2vw;
+        }
+
 
 
 
@@ -76,8 +93,9 @@
 
           <div class="inner cover">
             <h1 class="cover-heading">Image Completion with Deep Learning</h1>
-            <p class="lead">To get started, upload an image </p>
-              <p class="sub-lead">The model is trained to work for headshots of people. </p>
+            <p id = "intro" class="lead">To get started, upload an image </p>
+              <p id = "next">Would you like to <a href="extend">extend</a> the image  or <a href="random_mask">apply a mask?</a>  </p>
+              <p id = "intro2" class="sub-lead">The model is trained to work for headshots of people. </p>
 
 
      <form class="dropzone dz-clickable" action="flask-upload" method = "POST" id="my-dropzone" enctype=multipart/form-data>
@@ -98,12 +116,18 @@
             <center>
                 <input type = "button" value="Demo" class="btn btn-lg btn-default" id="demo" onclick="location.href='image'">
 
-                <input type = "button" value="Submit" class="btn btn-lg btn-default" id="next" onclick="location.href='image'">
-            </center>
 
+            </center>
+              <br>
+              <br>
+              <center>
+               <p id = "about" class="links"> <a href="about">How does it work?</a></p>
+              <br>
+              <a target="_blank" id = "slides" class="links" href="https://docs.google.com/presentation/d/1JF4vvHh_kbNDrGFfH3hhJPX57hX4llaGBPxgOLAGt8g/edit?usp=sharing">Slides</a>
+                  </center>
           <div class="mastfoot">
             <div class="inner">
-              <p>Cover template for <a href="http://getbootstrap.com">Bootstrap</a>, by <a href="https://twitter.com/mdo">@mdo</a>.</p>
+              <p >Cover template for <a href="http://getbootstrap.com">Bootstrap</a>, by <a href="https://twitter.com/mdo">@mdo</a>.</p>
             </div>
           </div>
 
@@ -124,19 +148,32 @@ Dropzone.options.myDropzone = {
     init: function() {
         var next = document.getElementById("next");
         var demo = document.getElementById("demo");
+        var intro = document.getElementById("intro");
+        var intro2 = document.getElementById("intro2");
 
         this.on("addedfile", function(file){
         console.log("addedfile");
         console.log(file)});
 
+        this.on("addedfile", function() {
+          if (this.files[1]!=null){
+            this.removeFile(this.files[0]);
+          }
+        });
+
         this.on("success", function(file) {
             next.style.visibility = "visible";
-            demo.style.visibility = "hidden"});
+            demo.style.visibility = "hidden";
+            intro.style.visibility = "hidden";
+            intro2.style.visibility = "hidden"});
 
        this.on("error", function(file) {console.log("error");});
 
        this.on("removedfile", function(file) {
-            next.style.visibility = "hidden";});
+            next.style.visibility = "hidden";
+            demo.style.visibility = "visible";
+            intro.style.visibility = "visible";
+            });
 
 
 

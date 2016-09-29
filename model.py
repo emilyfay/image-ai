@@ -161,6 +161,7 @@ class DCGAN(object):
             x2 = int(config.mask_x2)
             y1 = int(config.mask_y1)
             y2 = int(config.mask_y2)
+            print("mask coords:", x1,x2,y1,y2)
 
             mask = np.zeros([BS+1,64,64,3])
             not_mask = np.ones([BS+1,64,64,3])

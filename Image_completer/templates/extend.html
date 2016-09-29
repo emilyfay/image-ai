@@ -16,6 +16,10 @@
 
 
     <style>
+        html, body
+        {
+        height: 100%
+        }
         h1 {text-align: center;}
         h3 {text-align: left;}
         p {text-align: center;}
@@ -36,51 +40,73 @@
 
         .image_container
         {
-        width: 70vw;
-
-        margin: 0;
+        width: 70%;
+        height: 30%;
+        display: table;
+        margin: auto;
         background-color: white;
         position: relative;
-        padding: 2vw 2vw;
+        padding: 100px 30px;
         outline: 2px solid #92b0b3;
         outline-offset: 5px;
-        overflow: hidden;
 
 
         }
 
-        .image_1
+        .image
         {
-        width: 30vw;
-        height: 30vw;
-        display: inline;
-        position: relative;
-
-        float: left;
-
-        }
-
-        .image_2
-        {
-        width: 30vw;
-        height: 30vw;
-        display: inline;
+        max-width: 50%;
+        max-height: 50%;
+        min-width: 30%;
+        min-height: 30%;
+        display: block;
         margin: auto;
-
-        position: relative;
+        display: table-cell;
+        outline: 2px solid black;
 
         }
+
 
         .button-form
         {
         display: inline;
         }
 
-        .links
+        .radiolist
         {
-        font-size: 2.2vw;
+        display: inline;
+        float: left;
+        clear: none;
+        left-margin: 20 vw;
         }
 
+        .radio
+        {
+        display: inline;
+        }
+
+        fieldset
+            {
+          overflow: hidden;
+          align: left;
+          left-margin: 10 vw;
+            }
+
+
+        label {
+              float: left;
+              clear: none;
+              display: inline;
+              padding: 2px 1em 0 0;
+            }
+
+        input[type=radio],
+            input.radio {
+                  float: left;
+                  clear: none;
+                  margin: 4px;
+                display: inline;
+            }
 
 
 
@@ -110,28 +136,44 @@
 
           <div class="inner cover">
             <h1 class="cover-heading">Image Completion with Deep Learning</h1>
-            <p class="lead">Your completed image: </p>
 
-        <form class = "button-form">
-          <input type = "button" value="Restart" class="btn btn-lg btn-default" id="back" onclick="location.href='/'">
+        <form method = 'POST' action="extend-edge">
+            <br>
+        <fieldset>
+                <legend>Choose an edge to extend:</legend>
+            <div class = "radiolist">
+                    <label>
+                        <input class="radio" type="radio" name="edge" value="L" checked="true"> Left
+                    </label>
+                 <label>
+                        <input class="radio" type="radio" name="edge" value="T" > Top
+                </label>
+                 <label>
+                        <input class="radio" type="radio" name="edge" value="R" > Right
+                </label>
+                 <label>
+                        <input class="radio" type="radio" name="edge" value="B" > Bottom
+                </label>
+            </div>
+                        <input class = "btn btn-lg btn-default" type="submit" value="Extend my image!" />
+        </fieldset>
+
+
+         <br>
+      <div class="image_container">
+          <center>
+         <img class = "image" src={{image_path}}>
+              </center>
+      </div>
+
+        </form>
+
+            <br>
+                 <form class = "button-form">
+                     <input type = "button" value="Back" class="btn btn-lg btn-default" id="back" onclick="location.href='image'">
+                    <input type = "button" value="Restart" class="btn btn-lg btn-default" id="restart" onclick="location.href='/'">
             <br>
         </form>
-         <br>
-              <center>
-      <div class="image_container">
-
-         <img class = "image_1" src={{ds_image_path}}>
-          <img class = "image_2" src={{image_path}}>
-
-      </div>
-                  </center>
-
-
-
-            <br>
-              <center>
-               <p id = "about" class="links"> <a href="about">How does it work?</a></p>
-                  </center>
             <br>
             <br>
           <div class="mastfoot">
