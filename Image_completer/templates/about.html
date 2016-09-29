@@ -14,9 +14,6 @@
     <!-- Bootstrap core CSS -->
     <link href="../static/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Dropzone CSS -->
-    <link href="../static/css/dropzone.css" rel="stylesheet">
-
   <script type="text/javascript" src="../static/js/dropzone.js"></script>
   <script type="text/javascript" src="../static/js/app.js"></script>
 
@@ -43,6 +40,14 @@
             font-size: 2.0rem;
             margin: 2em 0; }
 
+        .textblock
+            {
+            text-align: left;
+            font-size: 2.0rem;
+            margin-left: 10vw;
+            margin-right: 10vw;
+            }
+
         #next
             {
             visibility: hidden;
@@ -52,6 +57,11 @@
         #intro
             {
             margin-bottom: 0;
+            }
+        #back
+            {
+            margin-left: 10vw;
+            font-size: 2vw
             }
 
 
@@ -73,8 +83,8 @@
               <nav>
                 <ul class="nav masthead-nav">
 
-                <input type = "button" value="Restart" class="btn btn-lg btn-default" id="back" onclick="location.href='/'">
-                     <p id = "next">Would you like to <a href="extend">extend</a> the image  or <a href="random_mask">apply a mask?</a>  </p>
+                <a id="back" href="/">Back</a>
+
                 </ul>
               </nav>
             </div>
@@ -82,6 +92,15 @@
 
           <div class="inner cover">
             <h1 class="cover-heading">Image Completion with Deep Learning</h1>
+
+              <p class="textblock">The model was trained using a deep convolutional generative adversarial network (DCGAN). <br> The code is written in
+                  <a href="https://www.tensorflow.org/">Tensorflow</a>,
+              using the <a href="https://bamos.github.io/2016/08/09/deep-completion/" >tutorial by Brandon Amos</a> as a starting point. His code is
+                  based on the paper <a href="https://arxiv.org/abs/1607.07539">"Semantic Image Inpainting with Perceptual and
+                  Contextual Losses"</a> by Raymond Yeh et al. The method used here to infill images is modeled after the generator described by
+                  <a href="http://cs231n.stanford.edu/reports2016/209_Report.pdf">C. Sauer et al.</a> with some slight modifications</p>
+
+              <p class="textblock">How it works:</p>
 
 
               <br>

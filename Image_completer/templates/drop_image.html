@@ -54,6 +54,18 @@
             margin-bottom: 0;
             }
 
+        #intro2
+        {
+        font-size: 2vw;
+        }
+
+        .links
+        {
+        font-size: 2.2vw;
+        }
+
+
+
 
     </style>
 
@@ -108,9 +120,11 @@
             </center>
               <br>
               <br>
-               <a id = "about" class="lead"> <a href="about">How does it work?</a></p>
+              <center>
+               <p id = "about" class="links"> <a href="about">How does it work?</a></p>
               <br>
-              <a href="https://docs.google.com/presentation/d/1JF4vvHh_kbNDrGFfH3hhJPX57hX4llaGBPxgOLAGt8g/edit?usp=sharing">Slides</a>
+              <a target="_blank" id = "slides" class="links" href="https://docs.google.com/presentation/d/1JF4vvHh_kbNDrGFfH3hhJPX57hX4llaGBPxgOLAGt8g/edit?usp=sharing">Slides</a>
+                  </center>
           <div class="mastfoot">
             <div class="inner">
               <p >Cover template for <a href="http://getbootstrap.com">Bootstrap</a>, by <a href="https://twitter.com/mdo">@mdo</a>.</p>
@@ -140,6 +154,12 @@ Dropzone.options.myDropzone = {
         this.on("addedfile", function(file){
         console.log("addedfile");
         console.log(file)});
+
+        this.on("addedfile", function() {
+          if (this.files[1]!=null){
+            this.removeFile(this.files[0]);
+          }
+        });
 
         this.on("success", function(file) {
             next.style.visibility = "visible";

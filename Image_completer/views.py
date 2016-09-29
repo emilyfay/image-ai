@@ -6,7 +6,8 @@ import werkzeug
 
 import numpy as np
 from flask import render_template, request,redirect,url_for, session
-from scipy import ndimage, misc
+from scipy import ndimage, misc, sparse
+import pyamg
 
 from Image_completer import app
 
@@ -61,6 +62,20 @@ def home():
 def about():
     return render_template("about.html")
 
+@app.route('/image')
+def display_image():
+    filename = session.get('image_file',False)
+    if filename==False:
+        filename = "DEMO.png"
+        orig_path = os.path.join(raw_upload_folder, filename)
+        raw_path = os.path.join(raw_upload_folder, "raw"+filename)
+        shutil.copy(orig_path, raw_path)
+
+    r_filename = randword(6)+filename.strip('raw')
+    session['r_image_file'] = r_filename
+
+    return render_template("display_image.html", image_path="../static/raw_uploads/"+filename)
+
 # dropzone activates this
 @app.route('/flask-upload', methods=['POST'])
 def upload_file():
@@ -113,8 +128,8 @@ def apply_mask():
 
     x1 = im_x_size-np.floor(im_x_size/4)
     x2 = im_x_size-szN
-    y1 = im_y_size-np.floor(im_y_size/4)
-    y2 = im_y_size-szN
+    y1 = np.floor(im_y_size/3.5)
+    y2 = np.floor(im_y_size/2)
 
     mask[x1:x2,y1:y2,:] = noise_mat[x1:x2,y1:y2,:]
     not_mask[x1:x2,y1:y2,:] = 0.0
@@ -188,7 +203,7 @@ def complete_image():
     complete_im = np.add(np.multiply(original_im, big_not_mask),np.multiply(big_filled,big_mask))
     completed_path = completed_folder+r_filename
     misc.imsave(completed_path, complete_im)
-    return render_template("display_completed_image.html", ds_image_path = "../static/filled_images/"+"AI"+r_filename,image_path="../static/completed_images/"+r_filename)
+    return render_template("display_completed_image.html", ds_image_path = "../static/masked_images/"+r_filename,image_path="../static/completed_images/"+r_filename)
 
 @app.route('/extend-edge', methods=['POST'])
 def extend_edge():
@@ -209,8 +224,8 @@ def image_extend():
     in_im = ndimage.imread(in_path, mode='RGB').astype(float)
     x_ = in_im.shape[0]
     y_ = in_im.shape[1]
-    ex_x = int(x_/5)
-    ex_y = int(y_/5)
+    ex_x = int(np.ceil(x_/5))
+    ex_y = int(np.ceil(y_/5))
 
     if edge == "T":
         # extend the top
@@ -276,11 +291,83 @@ def image_extend():
 
     big_filled = misc.imresize(filled_image,(x_f,y_f,3))
     misc.imsave(rs_filled_path, big_filled)
+    masked_im = np.multiply(image_holder, big_not_mask)
+    masked_path = masked_folder+"M"+r_filename
+    misc.imsave(masked_path, masked_im)
     complete_im = np.add(np.multiply(image_holder, big_not_mask),np.multiply(big_filled,big_mask))
     completed_path = completed_folder+r_filename
     misc.imsave(completed_path, complete_im)
-    return render_template("display_completed_image.html", ds_image_path="../static/raw_uploads/"+r_filename,image_path="../static/completed_images/"+r_filename)
+    return render_template("display_completed_image.html", ds_image_path="../static/masked_images/"+"M"+r_filename,image_path="../static/completed_images/"+r_filename)
 
 
 # set the secret key.
 app.secret_key = os.urandom(24)
+
+# function to apply poisson blending, from github.com/parosky
+def blend(img_target, img_source, img_mask, offset=(0, 0)):
+    # compute regions to be blended
+    region_source = (
+            max(-offset[0], 0),
+            max(-offset[1], 0),
+            min(img_target.shape[0]-offset[0], img_source.shape[0]),
+            min(img_target.shape[1]-offset[1], img_source.shape[1]))
+    region_target = (
+            max(offset[0], 0),
+            max(offset[1], 0),
+            min(img_target.shape[0], img_source.shape[0]+offset[0]),
+            min(img_target.shape[1], img_source.shape[1]+offset[1]))
+    region_size = (region_source[2]-region_source[0], region_source[3]-region_source[1])
+
+    # clip and normalize mask image
+    img_mask = img_mask[region_source[0]:region_source[2], region_source[1]:region_source[3]]
+    img_mask[img_mask==0] = False
+    img_mask[img_mask!=False] = True
+
+    # create coefficient matrix
+    A = sparse.identity(np.prod(region_size), format='lil')
+    for y in range(region_size[0]):
+        for x in range(region_size[1]):
+            if img_mask[y,x]:
+                index = x+y*region_size[1]
+                A[index, index] = 4
+                if index+1 < np.prod(region_size):
+                    A[index, index+1] = -1
+                if index-1 >= 0:
+                    A[index, index-1] = -1
+                if index+region_size[1] < np.prod(region_size):
+                    A[index, index+region_size[1]] = -1
+                if index-region_size[1] >= 0:
+                    A[index, index-region_size[1]] = -1
+    A = A.tocsr()
+
+    # create poisson matrix for b
+    P = pyamg.gallery.poisson(img_mask.shape)
+
+    # for each layer (ex. RGB)
+    for num_layer in range(img_target.shape[2]):
+        # get subimages
+        t = img_target[region_target[0]:region_target[2],region_target[1]:region_target[3],num_layer]
+        s = img_source[region_source[0]:region_source[2], region_source[1]:region_source[3],num_layer]
+        t = t.flatten()
+        s = s.flatten()
+
+        # create b
+        b = P * s
+        for y in range(region_size[0]):
+            for x in range(region_size[1]):
+                if not img_mask[y,x]:
+                    index = x+y*region_size[1]
+                    b[index] = t[index]
+
+        # solve Ax = b
+        x = pyamg.solve(A,b,verb=False,tol=1e-10)
+
+        # assign x to target image
+        x = np.reshape(x, region_size)
+        x[x>255] = 255
+        x[x<0] = 0
+        x = np.array(x, img_target.dtype)
+        img_target[region_target[0]:region_target[2],region_target[1]:region_target[3],num_layer] = x
+
+    return img_target
+
