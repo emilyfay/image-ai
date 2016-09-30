@@ -1,3 +1,5 @@
+# Code by Emily Fay, Sept-2016
+
 import os.path
 import random, string
 import shutil
@@ -5,9 +7,8 @@ import subprocess
 import werkzeug
 
 import numpy as np
-from flask import render_template, request,redirect,url_for, session
+from flask import render_template, request, redirect, url_for, session
 from scipy import ndimage, misc, sparse
-import pyamg
 
 from Image_completer import app
 
@@ -18,7 +19,9 @@ masked_folder = "/home/ubuntu/web_app_AWS/Image_completer/static/masked_images/"
 filled_folder = "/home/ubuntu/web_app_AWS/Image_completer/static/filled_images/"
 completed_folder = "/home/ubuntu/web_app_AWS/Image_completer/static/completed_images/"
 
-folder_list = [landing_upload_folder,raw_upload_folder,proc_upload_folder,masked_folder,filled_folder, completed_folder]
+folder_list = [landing_upload_folder, raw_upload_folder, proc_upload_folder, masked_folder, filled_folder,
+               completed_folder]
+
 
 def clean_dir():
     for folder in folder_list:
@@ -40,13 +43,15 @@ allowed_extensions = set(['jpg', 'jpeg', 'gif', 'png',
                           'EPS', 'BMP',
                           'TIF', 'TIFF'])
 
+
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in allowed_extensions
 
-def randword(length):
 
-    return''.join(random.choice(string.lowercase) for i in range(length))
+def randword(length):
+    return ''.join(random.choice(string.lowercase) for i in range(length))
+
 
 clean_dir()
 
@@ -58,23 +63,26 @@ def home():
     session.clear()
     return render_template("drop_image.html")
 
+
 @app.route('/about')
 def about():
     return render_template("about.html")
 
+
 @app.route('/image')
 def display_image():
-    filename = session.get('image_file',False)
-    if filename==False:
+    filename = session.get('image_file', False)
+    if filename == False:
         filename = "DEMO.png"
         orig_path = os.path.join(raw_upload_folder, filename)
-        raw_path = os.path.join(raw_upload_folder, "raw"+filename)
+        raw_path = os.path.join(raw_upload_folder, "raw" + filename)
         shutil.copy(orig_path, raw_path)
 
-    r_filename = randword(6)+filename.strip('raw')
+    r_filename = randword(6) + filename.strip('raw')
     session['r_image_file'] = r_filename
 
-    return render_template("display_image.html", image_path="../static/raw_uploads/"+filename)
+    return render_template("display_image.html", image_path="../static/raw_uploads/" + filename)
+
 
 # dropzone activates this
 @app.route('/flask-upload', methods=['POST'])
@@ -84,8 +92,9 @@ def upload_file():
         if file and allowed_file(file.filename):
             filename = werkzeug.secure_filename(file.filename)
             file.save(os.path.join(landing_upload_folder, filename))
-            return redirect(url_for('file_upload', filename = filename))
+            return redirect(url_for('file_upload', filename=filename))
     return 'error'
+
 
 @app.route('/file_upload')
 def file_upload():
@@ -93,48 +102,49 @@ def file_upload():
     orig_path = os.path.join(landing_upload_folder, filename)
 
     # Move file out of landing zone
-    raw_path = os.path.join(raw_upload_folder, "raw"+filename)
+    raw_path = os.path.join(raw_upload_folder, "raw" + filename)
     shutil.copy(orig_path, raw_path)
 
-    session['image_file'] = "raw"+filename
+    session['image_file'] = "raw" + filename
     return 'uploaded'
+
 
 @app.route('/random_mask')
 def apply_mask():
     filename = session.get('image_file', False)
-    if filename==False:
+    if filename == False:
         filename = "DEMO.png"
 
     orig_path = os.path.join(raw_upload_folder, filename)
-    r_filename = randword(6)+filename
+    r_filename = randword(6) + filename
     raw_path = os.path.join(raw_upload_folder, r_filename)
     shutil.copy(orig_path, raw_path)
 
     session['r_image_file'] = r_filename
 
-    in_path = raw_upload_folder+r_filename
+    in_path = raw_upload_folder + r_filename
     proc_filename = r_filename
-    masked_path = masked_folder+proc_filename
+    masked_path = masked_folder + proc_filename
     in_image = (ndimage.imread(in_path, mode='RGB').astype(float))
 
     im_x_size = in_image.shape[0]
     im_y_size = in_image.shape[1]
 
-    mask = np.zeros([im_x_size,im_y_size,3])
-    not_mask = np.ones([im_x_size,im_y_size,3])
-    noise_mat = np.ones([im_x_size,im_y_size,3])*120
+    mask = np.zeros([im_x_size, im_y_size, 3])
+    not_mask = np.ones([im_x_size, im_y_size, 3])
+    noise_mat = np.ones([im_x_size, im_y_size, 3]) * 120
 
-    szN = 2*np.floor(im_x_size/64)
+    szN = 2 * np.floor(im_x_size / 64)
 
-    x1 = im_x_size-np.floor(im_x_size/4)
-    x2 = im_x_size-szN+2
-    y1 = np.floor(im_y_size/5.5)
-    y2 = np.floor(im_y_size/2.8)
+    x1 = im_x_size - np.floor(im_x_size / 4)
+    x2 = im_x_size - szN
+    y1 = np.floor(im_y_size / 3)
+    y2 = np.floor(im_y_size / 2)
 
-    mask[x1:x2,y1:y2,:] = noise_mat[x1:x2,y1:y2,:]
-    not_mask[x1:x2,y1:y2,:] = 0.0
+    mask[x1:x2, y1:y2, :] = noise_mat[x1:x2, y1:y2, :]
+    not_mask[x1:x2, y1:y2, :] = 0.0
 
-    masked_image = np.add(np.multiply(in_image,not_mask), mask)
+    masked_image = np.add(np.multiply(in_image, not_mask), mask)
     misc.imsave(masked_path, masked_image)
 
     session['mask_x1'] = x1
@@ -142,29 +152,28 @@ def apply_mask():
     session['mask_y1'] = y1
     session['mask_y2'] = y2
 
-    return render_template("display_masked_image.html", image_path="../static/masked_images/"+r_filename)
+    return render_template("display_masked_image.html", image_path="../static/masked_images/" + r_filename)
+
 
 @app.route('/extend')
 def extend():
-    filename = session.get('image_file',False)
+    filename = session.get('image_file', False)
 
-    if filename==False:
+    if filename == False:
         filename = "DEMO.png"
 
     orig_path = os.path.join(raw_upload_folder, filename)
-    r_filename = randword(6)+filename
+    r_filename = randword(6) + filename
     raw_path = os.path.join(raw_upload_folder, r_filename)
     shutil.copy(orig_path, raw_path)
 
     session['r_image_file'] = r_filename
 
-    return render_template("extend.html", image_path="../static/raw_uploads/"+r_filename)
-
+    return render_template("extend.html", image_path="../static/raw_uploads/" + r_filename)
 
 
 @app.route('/image-complete')
 def complete_image():
-
     x1 = session.get('mask_x1')
     x2 = session.get('mask_x2')
     y1 = session.get('mask_y1')
@@ -173,131 +182,135 @@ def complete_image():
     print('here')
     filename = session.get('image_file', False)
     r_filename = session.get('r_image_file', False)
-    if r_filename==False:
+    if r_filename == False:
         return redirect(url_for('home'))
-    if filename==False:
+    if filename == False:
         filename = "DEMO.png"
     print('here')
 
     filename = filename.strip('raw')
-    origin_path = raw_upload_folder+"raw"+filename
-    filled_path = filled_folder+"AI"+r_filename
+    origin_path = raw_upload_folder + "raw" + filename
+    filled_path = filled_folder + "AI" + r_filename
     original_im = ndimage.imread(origin_path, mode='RGB').astype(float)
     x_ = original_im.shape[0]
     y_ = original_im.shape[1]
-    sub_script = "python /home/ubuntu/web_app_AWS/image_fill_deconv.py --image_path %s --out_path %s --mask_x1 %i --mask_x2 %i --mask_y1 %i --mask_y2 %i" %(origin_path,filled_path,int(x1*64/x_),int(x2*64/x_),int(y1*64/y_),int(y2*64/y_))
+    sub_script = "python /home/ubuntu/web_app_AWS/image_fill_deconv.py --image_path %s --out_path %s --mask_x1 %i --mask_x2 %i --mask_y1 %i --mask_y2 %i" % (
+    origin_path, filled_path, int(x1 * 64 / x_), int(x2 * 64 / x_), int(y1 * 64 / y_), int(y2 * 64 / y_))
     print('subprocess')
-    subprocess.call(sub_script, shell = True)
+    subprocess.call(sub_script, shell=True)
 
+    big_not_mask = np.ones([x_, y_, 3])
 
-    big_not_mask = np.ones([x_,y_,3])
+    big_not_mask[x1:x2, y1:y2, :] = 0.0
 
-    big_not_mask[x1:x2, y1:y2,:] = 0.0
-
-    big_mask = 1-big_not_mask
+    big_mask = 1 - big_not_mask
 
     filled_image = ndimage.imread(filled_path, mode='RGB').astype(float)
 
-    big_filled = misc.imresize(filled_image,(x_,y_,3))
+    big_filled = misc.imresize(filled_image, (x_, y_, 3))
 
-    complete_im = np.add(np.multiply(original_im, big_not_mask),np.multiply(big_filled,big_mask))
-    completed_path = completed_folder+r_filename
+    complete_im = np.add(np.multiply(original_im, big_not_mask), np.multiply(big_filled, big_mask))
+    completed_path = completed_folder + r_filename
     misc.imsave(completed_path, complete_im)
-    return render_template("display_completed_image.html", ds_image_path = "../static/masked_images/"+r_filename,image_path="../static/completed_images/"+r_filename)
+    return render_template("display_completed_image.html", ds_image_path="../static/raw_uploads/" + r_filename,
+                           image_path="../static/completed_images/" + r_filename)
+
 
 @app.route('/extend-edge', methods=['POST'])
 def extend_edge():
     if request.method == 'POST':
         edge = request.form['edge']
-        return redirect(url_for('image_extend', edge = edge))
+        return redirect(url_for('image_extend', edge=edge))
     return 'error'
+
 
 @app.route('/image_extend')
 def image_extend():
     edge = request.args.get("edge")
 
     r_filename = session.get('r_image_file', False)
-    if r_filename==False:
+    if r_filename == False:
         return redirect(url_for('home'))
 
-    in_path = raw_upload_folder+r_filename
+    in_path = raw_upload_folder + r_filename
     in_im = ndimage.imread(in_path, mode='RGB').astype(float)
     x_ = in_im.shape[0]
     y_ = in_im.shape[1]
-    ex_x = int(np.ceil(x_/5))
-    ex_y = int(np.ceil(y_/5))
+    ex_x = int(np.ceil(x_ / 5))
+    ex_y = int(np.ceil(y_ / 5))
 
     if edge == "T":
         # extend the top
-        image_holder = np.random.normal(size=[x_+ex_x,y_,3], scale = 1)
-        big_not_mask = np.zeros([x_+ex_x,y_,3])
-        image_holder[ex_x:,:,:] = in_im
-        big_not_mask[ex_x+1:,:,:] = 1.0
+        image_holder = np.random.normal(size=[x_ + ex_x, y_, 3], scale=1)
+        big_not_mask = np.zeros([x_ + ex_x, y_, 3])
+        image_holder[ex_x:, :, :] = in_im
+        big_not_mask[ex_x + 1:, :, :] = 1.0
         x1 = 0
-        x2 = int(64.0/5)
+        x2 = 64.0 // 5.5
         y1 = 0
         y2 = 64
-        x_f = x_+ex_x
+        x_f = x_ + ex_x
         y_f = y_
     elif edge == "L":
         # extend left edge
-        image_holder = np.random.normal(size=[x_,y_+ex_y,3], scale = 1)
-        image_holder[:,ex_y:,:] = in_im
-        big_not_mask = np.zeros([x_,y_+ex_y,3])
-        big_not_mask[:,ex_y+1:,:] = 1.0
+        image_holder = np.random.normal(size=[x_, y_ + ex_y, 3], scale=1)
+        image_holder[:, ex_y:, :] = in_im
+        big_not_mask = np.zeros([x_, y_ + ex_y, 3])
+        big_not_mask[:, ex_y + 1:, :] = 1.0
         x1 = 0
         x2 = 64
         y1 = 0
-        y2 = int(64/5)
+        y2 = 64 // 5
         x_f = x_
-        y_f = y_+ex_y
+        y_f = y_ + ex_y
     elif edge == "R":
         # extend right edge
-        image_holder = np.random.normal(size=[x_,y_+ex_y,3], scale = 1)
-        image_holder[:,:y_,:] = in_im
-        big_not_mask = np.zeros([x_,y_+ex_y,3])
-        big_not_mask[:,:y_-1,:] = 1.0
+        image_holder = np.random.normal(size=[x_, y_ + ex_y, 3], scale=1)
+        image_holder[:, :y_, :] = in_im
+        big_not_mask = np.zeros([x_, y_ + ex_y, 3])
+        big_not_mask[:, :y_ - 1, :] = 1.0
         x1 = 0
         x2 = 64
-        y1 = 64-int(64/5)
+        y1 = 64 - 64 // 5
         y2 = 64
         x_f = x_
-        y_f = y_+ex_y
+        y_f = y_ + ex_y
     else:
         # extend the bottom
-        image_holder = np.random.normal(size=[x_+ex_x,y_,3], scale = 1)
-        image_holder[:x_,:,:] = in_im
-        big_not_mask = np.zeros([x_+ex_x,y_,3])
-        big_not_mask[:x_-1,:,:] = 1.0
-        x1 = 64-int(64/5)
+        image_holder = np.random.normal(size=[x_ + ex_x, y_, 3], scale=1)
+        image_holder[:x_, :, :] = in_im
+        big_not_mask = np.zeros([x_ + ex_x, y_, 3])
+        big_not_mask[:x_ - 1, :, :] = 1.0
+        x1 = 64 - 64 // 5
         x2 = 64
         y1 = 0
         y2 = 64
-        x_f = x_+ex_x
+        x_f = x_ + ex_x
         y_f = y_
 
-    origin_path = masked_folder+r_filename
+    origin_path = masked_folder + r_filename
     misc.imsave(origin_path, image_holder)
 
-
-    filled_path = filled_folder+"AI"+r_filename
-    sub_script = "python /home/ubuntu/web_app_AWS/image_fill_deconv.py --image_path %s --out_path %s --mask_x1 %i --mask_x2 %i --mask_y1 %i --mask_y2 %i" %(origin_path,filled_path,x1,x2,y1,y2)
+    filled_path = filled_folder + "AI" + r_filename
+    sub_script = "python /home/ubuntu/web_app_AWS/image_fill_deconv.py --image_path %s --out_path %s --mask_x1 %i --mask_x2 %i --mask_y1 %i --mask_y2 %i" % (
+    origin_path, filled_path, x1, x2, y1, y2)
     print('subprocess')
-    subprocess.call(sub_script, shell = True)
+    subprocess.call(sub_script, shell=True)
 
-    big_mask = 1-big_not_mask
-    rs_filled_path = filled_folder+"rsAI"+r_filename
+    big_mask = 1 - big_not_mask
+    rs_filled_path = filled_folder + "rsAI" + r_filename
     filled_image = ndimage.imread(filled_path, mode='RGB').astype(float)
 
-    big_filled = misc.imresize(filled_image,(x_f,y_f,3))
+    big_filled = misc.imresize(filled_image, (x_f, y_f, 3))
     misc.imsave(rs_filled_path, big_filled)
     masked_im = np.multiply(image_holder, big_not_mask)
-    masked_path = masked_folder+"M"+r_filename
+    masked_path = masked_folder + "M" + r_filename
     misc.imsave(masked_path, masked_im)
-    complete_im = np.add(np.multiply(image_holder, big_not_mask),np.multiply(big_filled,big_mask))
-    completed_path = completed_folder+r_filename
+    complete_im = np.add(np.multiply(image_holder, big_not_mask), np.multiply(big_filled, big_mask))
+    completed_path = completed_folder + r_filename
     misc.imsave(completed_path, complete_im)
-    return render_template("display_completed_image.html", ds_image_path="../static/masked_images/"+"M"+r_filename,image_path="../static/completed_images/"+r_filename)
+    return render_template("display_completed_image.html", ds_image_path="../static/masked_images/" + "M" + r_filename,
+                           image_path="../static/completed_images/" + r_filename)
 
 
 # set the secret key.

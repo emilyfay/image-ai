@@ -282,14 +282,14 @@
     .dropzone .dz-preview .dz-image {
       border-radius: 10px;
       overflow: hidden;
-      width: 250px;
-      height: 250px;
+      width: 200px;
+      height: 200px;
       position: relative;
       display: block;
       z-index: 10; }
       .dropzone .dz-preview .dz-image img {
-        width: 250px;
-        height: 250px;
+        width: 200px;
+        height: 200px;
         display: block; }
     .dropzone .dz-preview.dz-success .dz-success-mark {
       -webkit-animation: passing-through 3s cubic-bezier(0.77, 0, 0.175, 1);

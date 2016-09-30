@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/html">
-  <head>
+<head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -24,38 +24,40 @@
         h3 {text-align: left;}
         p {text-align: center;}
         form {
-                text-align: center;
-                margin-left: 5rem;
-                margin-right: 5rem;}
+        text-align: center;
+        margin-left: 5rem;
+        margin-right: 5rem;}
 
         .cover-heading
-            {
-            padding: 0 5em 1em;
-            }
+        {
+        padding: 0 5em 1em;
+        }
 
         .message {
-            text-align: center;
-            font-size: 2.0rem;
-            margin: 2em 0; }
+        text-align: center;
+        font-size: 2.0rem;
+        margin: 2em 0; }
 
-               .image_container
+        .image_container
         {
         width: 70vw;
-
-        margin: 0;
+        max-height: 20vmin;
+        display: table;
+        margin: auto;
         background-color: white;
         position: relative;
         padding: 2vw 2vw;
         outline: 2px solid #92b0b3;
         outline-offset: 5px;
-        overflow: hidden;
 
 
         }
 
         .image
         {
-        width: 50vw;
+        max-width: 40vw;
+        max-height: 40vh;
+        min-height: 20vh;
         display: block;
         margin: auto;
         display: table-cell;
@@ -70,79 +72,78 @@
         }
 
 
-
-
     </style>
 
-<body background = "../static/images/grey.png">
+<body background="../static/images/grey.png">
 
-    <div class="site-wrapper">
+<div class="site-wrapper">
 
 
+    <div class="cover-container">
 
-        <div class="cover-container">
-
-          <div class="masthead clearfix">
+        <div class="masthead clearfix">
             <div class="inner">
                 <br>
                 <br>
                 <br>
-              <nav>
-                <ul class="nav masthead-nav">
+                <nav>
+                    <ul class="nav masthead-nav">
 
 
-                </ul>
-              </nav>
+                    </ul>
+                </nav>
             </div>
-          </div>
+        </div>
 
-          <div class="inner cover">
+        <div class="inner cover">
             <h1 class="cover-heading">Image Completion with Deep Learning</h1>
             <p class="lead">Your masked image:</p>
 
-        <form class = "button-form">
-          <input type = "button" value="Back" class="btn btn-lg btn-default" id="back" onclick="location.href='image'">
-             <input type = "button" value="Complete my image!" class="btn btn-lg btn-default" id="complete" onclick="location.href='image-complete'">
+            <form class="button-form">
+                <input type="button" value="Back" class="btn btn-lg btn-default" id="back"
+                       onclick="location.href='image'">
+                <input type="button" value="Complete my image!" class="btn btn-lg btn-default" id="complete"
+                       onclick="location.href='image-complete'">
+                <br>
+            </form>
             <br>
-        </form>
-         <br>
-      <div class="image_container">
-          <center>
-         <img class = "image" src={{image_path}}>
-              </center>
-      </div>
-
-
-
-            <br>
-                 <form class = "button-form">
-          <input type = "button" value="Restart" class="btn btn-lg btn-default" id="back" onclick="location.href='/'">
-            <br>
-        </form>
-            <br>
-            <br>
-          <div class="mastfoot">
-            <div class="inner">
-              <p>Cover template for <a href="http://getbootstrap.com">Bootstrap</a>, by <a href="https://twitter.com/mdo">@mdo</a>.</p>
+            <div class="image_container">
+                <center>
+                    <img class="image" src={{image_path}}>
+                </center>
             </div>
-          </div>
+
+
+            <br>
+            <form class="button-form">
+                <input type="button" value="Restart" class="btn btn-lg btn-default" id="back"
+                       onclick="location.href='/'">
+                <br>
+            </form>
+            <br>
+            <br>
+            <div class="mastfoot">
+                <div class="inner">
+                    <p>Cover template for <a href="http://getbootstrap.com">Bootstrap</a>, by <a
+                            href="https://twitter.com/mdo">@mdo</a>.</p>
+                </div>
+            </div>
 
         </div>
 
-      </div>
-
     </div>
 
+</div>
 
 
-  <!-- Bootstrap core JavaScript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
+<!-- Bootstrap core JavaScript
+  ================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-    <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery.min.js"><\/script>')</script>
-    <script src="../static/js/bootstrap.min.js"></script>
-    <script src="../static/js/jquery.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery.min.js"><\/script>')</script>
+<script src="../static/js/bootstrap.min.js"></script>
+<script src="../static/js/jquery.js"></script>
 
-  </body>
+</body>
 </html>

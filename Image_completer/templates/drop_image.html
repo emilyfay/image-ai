@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/html">
-  <head>
+<head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -17,8 +17,8 @@
     <!-- Dropzone CSS -->
     <link href="../static/css/dropzone.css" rel="stylesheet">
 
-  <script type="text/javascript" src="../static/js/dropzone.js"></script>
-  <script type="text/javascript" src="../static/js/app.js"></script>
+    <script type="text/javascript" src="../static/js/dropzone.js"></script>
+    <script type="text/javascript" src="../static/js/app.js"></script>
 
     <style>
         html, body
@@ -29,30 +29,30 @@
         h3 {text-align: left;}
         p {text-align: center;}
         form {
-                text-align: center;
-                margin-left: 5rem;
-                margin-right: 5rem;}
+        text-align: center;
+        margin-left: 5rem;
+        margin-right: 5rem;}
 
         .cover-heading
-            {
-            padding: 0 5em 1em;
-            }
+        {
+        padding: 0 5em 1em;
+        }
 
         .message {
-            text-align: center;
-            font-size: 2.0rem;
-            margin: 2em 0; }
+        text-align: center;
+        font-size: 2.0rem;
+        margin: 2em 0; }
 
         #next
-            {
-            visibility: hidden;
-            font-size: 2.0rem;
-            }
+        {
+        visibility: hidden;
+        font-size: 2.0rem;
+        }
 
         #intro
-            {
-            margin-bottom: 0;
-            }
+        {
+        margin-bottom: 0;
+        }
 
         #intro2
         {
@@ -61,7 +61,7 @@
 
         .links
         {
-        font-size: 2.2vw;
+        font-size: 2.2vmin;
         }
 
         #error_message
@@ -70,78 +70,78 @@
         }
 
 
-
-
     </style>
 
-<body background = "../static/images/grey.png">
+<body background="../static/images/grey.png">
 
-    <div class="site-wrapper">
+<div class="site-wrapper">
 
 
+    <div class="cover-container">
 
-        <div class="cover-container">
-
-          <div class="masthead clearfix">
+        <div class="masthead clearfix">
             <div class="inner">
                 <br>
                 <br>
                 <br>
-              <nav>
-                <ul class="nav masthead-nav">
+                <nav>
+                    <ul class="nav masthead-nav">
 
 
-                </ul>
-              </nav>
+                    </ul>
+                </nav>
             </div>
-          </div>
+        </div>
 
-          <div class="inner cover">
+        <div class="inner cover">
             <h1 class="cover-heading">Image Completion with Deep Learning</h1>
-            <p id = "intro" class="lead">To get started, upload an image </p>
-              <p id = "next">Would you like to <a href="extend">extend</a> the image  or <a href="random_mask">apply a mask?</a>  </p>
-              <p id = "intro2" class="sub-lead">The model is trained to work for headshots of people. </p>
+            <p id="intro" class="lead">To get started, upload an image </p>
+            <p id="next">Would you like to <a href="extend">extend</a> the image or <a href="random_mask">apply a
+                mask?</a></p>
+            <p id="intro2" class="sub-lead">The model is trained to work for headshots of people. </p>
 
 
-     <form class="dropzone dz-clickable" action="flask-upload" method = "POST" id="my-dropzone" enctype=multipart/form-data>
+            <form class="dropzone dz-clickable" action="flask-upload" method="POST" id="my-dropzone"
+                  enctype=multipart/form-data>
 
-                    <div class="dz-message">
-                        <span>Click to select an image or drag and drop here</span>
-                        <span id="error_message">Error, try another file</span>
-                    </div>
+                <div class="dz-message">
+                    <span>Click to select an image or drag and drop here</span>
+                    <span id="error_message">Error, try another file</span>
+                </div>
 
-                    <div class = "fallback">
-                        <input name = "file" type = "file" multiple/>
-                        </div>
+                <div class="fallback">
+                    <input name="file" type="file" multiple/>
+                </div>
 
 
-
-        </form>
+            </form>
 
             <br>
             <center>
-                <input type = "button" value="Demo" class="btn btn-lg btn-default" id="demo" onclick="location.href='image'">
+                <input type="button" value="Demo" class="btn btn-lg btn-default" id="demo"
+                       onclick="location.href='image'">
 
 
             </center>
-              <br>
-              <br>
-              <center>
-               <p id = "about" class="links"> <a href="about">How does it work?</a></p>
-              <br>
-              <a target="_blank" id = "slides" class="links" href="https://docs.google.com/presentation/d/1JF4vvHh_kbNDrGFfH3hhJPX57hX4llaGBPxgOLAGt8g/edit?usp=sharing">Slides</a>
-                  </center>
-          <div class="mastfoot">
-            <div class="inner">
-              <p >Cover template for <a href="http://getbootstrap.com">Bootstrap</a>, by <a href="https://twitter.com/mdo">@mdo</a>.</p>
+            <br>
+            <center>
+                <p id="about" class="links"><a href="about">How does it work?</a></p>
+                <br>
+                <a target="_blank" id="slides" class="links"
+                   href="https://docs.google.com/presentation/d/1JF4vvHh_kbNDrGFfH3hhJPX57hX4llaGBPxgOLAGt8g/edit?usp=sharing">Slides</a>
+            </center>
+            <div class="mastfoot">
+                <div class="inner">
+                    <p>Cover template for <a href="http://getbootstrap.com">Bootstrap</a>, by <a
+                            href="https://twitter.com/mdo">@mdo</a>.</p>
+                </div>
             </div>
-          </div>
 
         </div>
 
-      </div>
-
     </div>
+
+</div>
 
 <script src="../static/js/jquery.js"></script>
 <script>
@@ -194,19 +194,18 @@ Dropzone.options.myDropzone = {
 
 
 
+
 </script>
 
 
+<!-- Bootstrap core JavaScript
+  ================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery.min.js"><\/script>')</script>
+<script src="../static/js/bootstrap.min.js"></script>
 
 
-  <!-- Bootstrap core JavaScript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-    <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery.min.js"><\/script>')</script>
-    <script src="../static/js/bootstrap.min.js"></script>
-
-
-  </body>
+</body>
 </html>

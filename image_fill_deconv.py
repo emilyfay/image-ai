@@ -22,7 +22,8 @@ flags.DEFINE_string("mask_x1", 0, "coordinates for mask")
 flags.DEFINE_string("mask_x2", 0, "coordinates for mask")
 flags.DEFINE_string("mask_y1", 0, "coordinates for mask")
 flags.DEFINE_string("mask_y2", 0, "coordinates for mask")
-flags.DEFINE_string("checkpoint_dir", "/home/ubuntu/web_app_AWS/final_checkpoint_deconv", "Directory name to save the checkpoints [checkpoint]")
+flags.DEFINE_string("checkpoint_dir", "/home/ubuntu/web_app_AWS/final_checkpoint_deconv",
+                    "Directory name to save the checkpoints [checkpoint]")
 flags.DEFINE_string("sample_dir", "filled", "Directory name to save the image samples [samples]")
 FLAGS = flags.FLAGS
 
@@ -30,6 +31,6 @@ config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
 with tf.Session(config=config) as sess:
     dcgan = DCGAN(sess, image_size=64, batch_size=FLAGS.batch_size,
-                  is_crop=False, checkpoint_dir=FLAGS.checkpoint_dir, out_path = FLAGS.out_path, in_path = FLAGS.dataset)
+                  is_crop=False, checkpoint_dir=FLAGS.checkpoint_dir, out_path=FLAGS.out_path, in_path=FLAGS.dataset)
 
     dcgan.train(FLAGS)

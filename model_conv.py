@@ -120,15 +120,7 @@ class DCGAN(object):
     def train(self, config):
         data = glob(os.path.join(config.dataset, "*.png"))
         assert (len(data) > 0)
-        '''
-        d_optim = tf.train.AdamOptimizer(config.learning_rate/10000000, beta1=config.beta1, epsilon = 0.1) \
-                          .minimize(self.d_loss, var_list=self.d_vars)
 
-        g_optim_init = tf.train.AdamOptimizer(config.learning_rate/10000000, beta1=config.beta1, epsilon = 0.001) \
-                          .minimize(self.g_loss, var_list=self.g_vars)
-        g_optim = tf.train.AdamOptimizer(config.learning_rate/1000000000, beta1=config.beta1, epsilon = 0.001) \
-                          .minimize(self.g_loss, var_list=self.g_vars)
-                          '''
         tf.initialize_all_variables().run()
 
         self.g_sum = tf.merge_summary(
@@ -205,10 +197,8 @@ class DCGAN(object):
 
         h0 = lrelu(conv2d(z_image, self.gf_dim, d_h=1, d_w=1, name='g_h0'))
         h1 = lrelu(self.g_bn1(conv2d(h0, self.gf_dim, d_h=1, d_w=1, name='g_h1')))
-        h2 = lrelu(self.g_bn2(conv2d(h1, self.gf_dim * 2, name='g_h2')))
-        h3, self.h3_w, self.h3_b = conv2d_transpose(h2,
-                                                    [self.batch_size, 64, 64, self.gf_dim], name='g_h3', with_w=True)
-        h3 = tf.nn.relu(self.g_bn3(h3))
+        h2 = lrelu(self.g_bn2(conv2d(h1, self.gf_dim, d_h=1, d_w=1, name='g_h2')))
+        h3 = lrelu(self.g_bn3(conv2d(h2, self.gf_dim, d_h=1, d_w=1, name='g_h3')))
         h4 = lrelu(self.g_bn4(conv2d(h3, self.gf_dim, d_h=1, d_w=1, name='g_h4')))
         h5 = lrelu(self.g_bn5(conv2d(h4, 3, k_h=3, k_w=3, d_h=1, d_w=1, name='g_h5')))
 
@@ -219,30 +209,12 @@ class DCGAN(object):
 
         h0 = lrelu(conv2d(z_image, self.gf_dim, d_h=1, d_w=1, name='g_h0'))
         h1 = lrelu(self.g_bn1(conv2d(h0, self.gf_dim, d_h=1, d_w=1, name='g_h1')))
-        h2 = lrelu(self.g_bn2(conv2d(h1, self.gf_dim * 2, name='g_h2')))
-        h3, self.h3_w, self.h3_b = conv2d_transpose(h2,
-                                                    [self.batch_size, 64, 64, self.gf_dim], name='g_h3', with_w=True)
-        h3 = tf.nn.relu(self.g_bn3(h3))
+        h2 = lrelu(self.g_bn2(conv2d(h1, self.gf_dim, d_h=1, d_w=1, name='g_h2')))
+        h3 = lrelu(self.g_bn3(conv2d(h2, self.gf_dim, d_h=1, d_w=1, name='g_h3')))
         h4 = lrelu(self.g_bn4(conv2d(h3, self.gf_dim, d_h=1, d_w=1, name='g_h4')))
         h5 = lrelu(self.g_bn5(conv2d(h4, 3, k_h=3, k_w=3, d_h=1, d_w=1, name='g_h5')))
 
         return tf.nn.tanh(h5)
-
-    def infill(self, masked_image):
-
-        BS = self.batch_size
-        try:
-            self.load(self.checkpoint_dir)
-            print(" [*] Trained Load SUCCESS from %s" % self.checkpoint_dir)
-            print(masked_image.shape)
-            masked_image_mat = np.ndarray((BS, 64, 64, 3))
-            masked_image_mat[0, :, :, :] = np.asarray(masked_image)
-            filled_image = self.sess.run([self.sampler], {self.z: masked_image_mat})
-            imsave_single(filled_image[0][0, :, :, :], self.outpath)
-        except:
-            print(" [!] Process failed.")
-
-        return filled_image
 
     def save(self, checkpoint_dir, step):
         if not os.path.exists(checkpoint_dir):
