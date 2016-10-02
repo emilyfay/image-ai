@@ -127,7 +127,7 @@ class DCGAN(object):
             [self.d__sum, self.G_sum, self.d_loss_fake_sum, self.g_loss_sum])
         self.d_sum = tf.merge_summary(
             [self.d_sum, self.d_loss_real_sum, self.d_loss_sum])
-        self.writer = tf.train.SummaryWriter("./logs", self.sess.graph)
+        #self.writer = tf.train.SummaryWriter("./logs", self.sess.graph)
 
         counter = 1
 

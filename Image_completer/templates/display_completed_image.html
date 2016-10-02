@@ -111,7 +111,7 @@
             <p class="lead">Your completed image: </p>
 
         <form class = "button-form">
-          <input type = "button" value="Restart" class="btn btn-lg btn-default" id="back" onclick="location.href='/'">
+          <input type = "button" value="Restart" class="btn btn-lg btn-default" id="home" data-filename={{filename}}>
             <br>
         </form>
          <br>
@@ -154,6 +154,15 @@
     <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery.min.js"><\/script>')</script>
     <script src="../static/js/bootstrap.min.js"></script>
     <script src="../static/js/jquery.js"></script>
+  <script>
+   $(document).on('click','#home', function() {
+    var name = $(this).data('filename');
+
+    if (name != undefined && name != null) {
+    window.location = '/clean?filename='+name;
+    }
+   });
+   </script>
 
   </body>
 </html>

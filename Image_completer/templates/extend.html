@@ -132,7 +132,7 @@
         <div class="inner cover">
             <h1 class="cover-heading">Image Completion with Deep Learning</h1>
 
-            <form method='POST' action="extend-edge">
+            <form method='POST' id="form" action="extend-edge" data-filename = {{filename}}>
                 <br>
                 <fieldset>
                     <legend>Choose an edge to extend:</legend>
@@ -166,9 +166,9 @@
             <br>
             <form class="button-form">
                 <input type="button" value="Back" class="btn btn-lg btn-default" id="back"
-                       onclick="location.href='image'">
-                <input type="button" value="Restart" class="btn btn-lg btn-default" id="restart"
-                       onclick="location.href='/'">
+                       data-filename={{filename}}>
+                <input type="button" value="Restart" class="btn btn-lg btn-default" id="home"
+                       data-filename={{filename}}>
                 <br>
             </form>
             <br>
@@ -195,6 +195,28 @@
 <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery.min.js"><\/script>')</script>
 <script src="../static/js/bootstrap.min.js"></script>
 <script src="../static/js/jquery.js"></script>
+<script>
+    $('#form').submit(function(eventObj) {
+    $(this).append('<input type="hidden" name="filename" value={{filename}} /> ');
+    return true;
+});
 
+    $(document).on('click','#home', function() {
+    var name = $(this).data('filename');
+
+    if (name != undefined && name != null) {
+    window.location = '/clean?filename='+name;
+    }
+   });
+
+   $(document).on('click','#back', function() {
+    var name = $(this).data('filename');
+
+    if (name != undefined && name != null) {
+    window.location = '/image?filename='+name;
+    }
+   });
+
+</script>
 </body>
 </html>

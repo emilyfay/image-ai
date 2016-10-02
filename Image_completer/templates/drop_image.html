@@ -96,13 +96,16 @@
         <div class="inner cover">
             <h1 class="cover-heading">Image Completion with Deep Learning</h1>
             <p id="intro" class="lead">To get started, upload an image </p>
-            <p id="next">Would you like to <a href="extend">extend</a> the image or <a href="random_mask">apply a
-                mask?</a></p>
+            <p id="next">Would you like to <input type="button" value="extend" class="btn" id="extend"
+            /> the image or <input type="button" value="apply a mask" class="btn" id="mask"
+            /></p>
+
             <p id="intro2" class="sub-lead">The model is trained to work for headshots of people. </p>
 
 
             <form class="dropzone dz-clickable" action="flask-upload" method="POST" id="my-dropzone"
                   enctype=multipart/form-data>
+                <input type="hidden" name="new_filename" value={{rand_filename}} id="new_filename"/>
 
                 <div class="dz-message">
                     <span>Click to select an image or drag and drop here</span>
@@ -119,7 +122,7 @@
             <br>
             <center>
                 <input type="button" value="Demo" class="btn btn-lg btn-default" id="demo"
-                       onclick="location.href='image'">
+                       data-filename="DEMO.png"/>
 
 
             </center>
@@ -151,7 +154,8 @@
 Dropzone.options.myDropzone = {
     autoProcessQueue: true,
     maxFiles: 1,
-    maxFilesize: 1024,
+    maxFilesize: 3,
+
     init: function() {
         var next = document.getElementById("next");
         var demo = document.getElementById("demo");
@@ -161,7 +165,9 @@ Dropzone.options.myDropzone = {
 
         this.on("addedfile", function(file){
         console.log("addedfile");
-        console.log(file)});
+        console.log(file);
+
+        });
 
         this.on("addedfile", function() {
           if (this.files[1]!=null){
@@ -171,9 +177,11 @@ Dropzone.options.myDropzone = {
 
         this.on("success", function(file) {
             next.style.visibility = "visible";
+            $('#next').data("filename",file.name);
             demo.style.visibility = "hidden";
             intro.style.visibility = "hidden";
-            intro2.style.visibility = "hidden"});
+            intro2.style.visibility = "hidden";
+            });
 
        this.on("error", function(file) {console.log("error"); error.visibility = "visible";});
 
@@ -183,6 +191,19 @@ Dropzone.options.myDropzone = {
             intro.style.visibility = "visible";
             });
 
+       this.on("complete", function(file) {
+            if (file.size > 2*1024*1024) {
+                this.removeFile(file);
+                alert('file too big');
+                return false;
+            }
+
+            if(!file.type.match('image.*')) {
+                this.removeFile(file);
+                alert('Not an image')
+                return false;
+            }
+        });
 
 
     }
@@ -190,7 +211,29 @@ Dropzone.options.myDropzone = {
 
 };
 
+$(document).on('click','#demo', function() {
+    var name = $(this).data('filename');
 
+    if (name != undefined && name != null) {
+    window.location = '/image?filename='+name;
+    }
+   });
+
+$(document).on('click','#mask', function() {
+var name = '{{rand_filename}}';
+
+if (name != undefined && name != null) {
+window.location = '/random_mask?filename='+name;
+}
+});
+
+$(document).on('click','#extend', function() {
+var name = '{{rand_filename}}';
+
+if (name != undefined && name != null) {
+window.location = '/extend?filename='+name;
+}
+});
 
 
 

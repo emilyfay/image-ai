@@ -64,6 +64,11 @@
         font-size: 2vw
         }
 
+        .image
+        {
+        width: 50%;
+        }
+
 
     </style>
 
@@ -92,22 +97,71 @@
         <div class="inner cover">
             <h1 class="cover-heading">Image Completion with Deep Learning</h1>
 
-            <p class="textblock">The model was trained using a deep convolutional generative adversarial network
-                (DCGAN). <br> The code is written in
-                <a href="https://www.tensorflow.org/">Tensorflow</a>,
-                using the <a href="https://bamos.github.io/2016/08/09/deep-completion/">tutorial by Brandon Amos</a> as
-                a starting point. His code is
-                based on the paper <a href="https://arxiv.org/abs/1607.07539">"Semantic Image Inpainting with Perceptual
-                    and
-                    Contextual Losses"</a> by Raymond Yeh et al. The method used here to infill images is modeled after
-                the generator described by
-                <a href="http://cs231n.stanford.edu/reports2016/209_Report.pdf">C. Sauer et al.</a> with some slight
-                modifications</p>
+            <p class="textblock">A deep convolutional neural network was trained to infill masked regions in images
+                using a generative adversarial network
+                (DCGAN). <br> <br> The network was trained on over 120,000 64 x 64 pixel head shots of people (from the
+                <a
+                        target="_blank" href="http://vis-www.cs.umass.edu/lfw/">LFW</a> and <a target="_blank"
+                                                                                               href="http://bcsiriuschen.github.io/CARC/">CACD</a>
+                databases). The training involved two adversarial networks: a generator and a discriminator. The
+                generator
+                takes in an image with a masked region and outputs a new image. The discriminator takes in both original
+                images
+                and the generated images and classifies them as real or fake. The discriminator is trained to get better
+                at differentiating
+                between the real images and those from the generator, while the generator is trained to produce images
+                that can fool the
+                discriminator. Together, the networks can learn to infill images with realistic-looking content.
+                <br> <br>
+                In order to train a GAN, both networks must continue to learn at a similar rate. Using thresholds,
+                learning could be
+                paused for a network when it got too far ahead of the other.
+                <br> <br></p>
+            <div class="image_container">
+                <center>
+                    <img class="image" src="../static/images/GAN.png">
+                </center>
+            </div>
 
-            <p class="textblock">How it works:</p>
+
+            <p class="textblock">
+                <br> The code is written in
+                <a target="_blank" href="https://www.tensorflow.org/">Tensorflow</a>,
+                using the <a target="_blank" href="https://bamos.github.io/2016/08/09/deep-completion/">tutorial by
+                Brandon Amos</a> as
+                a starting point. His code is
+                based on the paper <a target="_blank" href="https://arxiv.org/abs/1607.07539">"Semantic Image Inpainting
+                with Perceptual
+                and
+                Contextual Losses"</a> by Raymond Yeh et al. The method used here to infill images is modeled after
+                the generator described by
+                <a target="_blank" href="http://cs231n.stanford.edu/reports2016/209_Report.pdf">C. Sauer et al.</a> with
+                some slight
+                modifications.
+                <br> <br>
+
+                Generator architecture:
+                <br>
+                [64 channel 5x5 CONV stride 1 + leakyReLU + batchnorm] x 5 <br>
+                [64 channel 3x3 CONV stride 1 + leakyReLU + batchnorm] <br>
+                [tanh]
+                <br> <br>
+                Discriminator architecture:
+                <br>
+                [64 channel 5x5 CONV stride 2 + leakyReLU] <br>
+                [128 channel 5x5 CONV stride 2 + leakyReLU] <br>
+                [256 channel 5x5 CONV stride 2 + leakyReLU] <br>
+                [512 channel 5x5 CONV stride 2 + leakyReLU] <br>
+                [fully connected layer] <br>
+                [sigmoid] <br>
+            </p>
+
+
             <br>
 
-            <p class="textblock">See the <a href="https://github.com/emilyfay">source code</a> on Github.</p>
+
+            <p class="textblock">See the <a target="_blank" href="https://github.com/emilyfay">source code</a> on
+                Github.</p>
 
 
             <br>
